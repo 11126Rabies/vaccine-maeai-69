@@ -1210,6 +1210,32 @@
   document.getElementById('dash-filter-school').addEventListener('change', renderDashboard);
   document.getElementById('dash-filter-class').addEventListener('change', renderDashboard);
 
+  // === ตัวแปรเก็บรายชื่อที่ผ่านการกรอง (เพื่อใช้ตอน Export ตามตัวกรอง) ===
+  let currentFilteredStudents = [];
+  
+  // สร้าง Hook ดักจับตอน renderList เพื่ออัปเดต currentFilteredStudents
+  const originalRenderList = renderList;
+  renderList = function() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const fc = document.getElementById('filter-class').value;
+    const fs = document.getElementById('filter-school').value;
+    const fStatus = document.getElementById('filter-status').value;
+    
+    currentFilteredStudents = allStudents.filter(s => {
+      const matchQ = !q || (s.full_name||'').toLowerCase().includes(q) || (s.national_id||'').includes(q) || (s.nickname||'').toLowerCase().includes(q);
+      const matchC = !fc || s.class_room===fc;
+      const matchS = !fs || s.school===fs;
+      
+      const analysis = analyzeVaccines(s);
+      let matchStatus = true;
+      if (fStatus === 'missing') matchStatus = analysis.missing.length > 0;
+      if (fStatus === 'complete') matchStatus = analysis.missing.length === 0 && !analysis.noDob;
+
+      return matchQ && matchC && matchS && matchStatus;
+    });
+    originalRenderList(); // เรียกฟังก์ชันเดิมทำงานต่อ
+  };
+
   function getVaxExport(s, baseKey) {
     const date = s[baseKey + '_date'];
     if (!date) return '';
@@ -1220,35 +1246,136 @@
     return formatDate(date) + (extra.length ? ` [${extra.join(', ')}]` : '');
   }
 
-  document.getElementById('export-excel-btn').addEventListener('click', function() {
-    if (!allStudents.length) { showError('ไม่มีข้อมูลเพื่อส่งออก'); return; }
+  // === ฟังก์ชันส่งออก Excel หลัก (รับค่า array นักเรียนที่ต้องการส่งออก) ===
+  function exportToExcel(targetStudents, filenamePrefix) {
+    if (!targetStudents || !targetStudents.length) { showError('ไม่มีข้อมูลเพื่อส่งออก'); return; }
     if (typeof XLSX === 'undefined') { showError('ไลบรารี Excel ยังไม่พร้อม กรุณารอสักครู่'); return; }
     try {
-      const rows = allStudents.map(s => ({
-        'ชื่อ-นามสกุล': s.full_name || '', 'ชื่อเล่น': s.nickname || '', 'เลขบัตรประชาชน': s.national_id || '', 'วันเกิด': s.date_of_birth || '',
-        'เพศ': s.gender || '', 'หมู่เลือด': s.blood_type || '', 'โรงเรียน': s.school || '', 'ห้องเรียน': s.class_room || '', 'HN': s.hn || '',
-        'น้ำหนัก (กก.)': s.weight || '', 'ส่วนสูง (ซม.)': s.height || '', 'ที่อยู่': buildAddress(s) || '',
-        'ชื่อบิดา': s.father_name || '', 'อาชีพบิดา': s.father_occupation || '', 'โทรศัพท์บิดา': s.father_phone || '',
-        'ชื่อมารดา': s.mother_name || '', 'อาชีพมารดา': s.mother_occupation || '', 'โทรศัพท์มารดา': s.mother_phone || '',
-        'ผู้ปกครอง': s.guardian_name || '', 'ความสัมพันธ์': s.guardian_relation || '', 'โทรศัพท์ผู้ปกครอง': s.guardian_phone || '',
-        'BCG': getVaxExport(s, 'vaccine_bcg'), 'HepB 1': getVaxExport(s, 'vaccine_hepb_1'), 'HepB 2': getVaxExport(s, 'vaccine_hepb_2'),
-        'OPV 1': getVaxExport(s, 'vaccine_opv_1'), 'OPV 2': getVaxExport(s, 'vaccine_opv_2'), 'OPV 3': getVaxExport(s, 'vaccine_opv_3'),
-        'DTP 1': getVaxExport(s, 'vaccine_dtp_1'), 'DTP 2': getVaxExport(s, 'vaccine_dtp_2'), 'DTP 3': getVaxExport(s, 'vaccine_dtp_3'),
-        'Rota 1': getVaxExport(s, 'vaccine_rota_1'), 'Rota 2': getVaxExport(s, 'vaccine_rota_2'), 'Rota 3': getVaxExport(s, 'vaccine_rota_3'),
-        'IPV': getVaxExport(s, 'vaccine_ipv'), 'MMR 1': getVaxExport(s, 'vaccine_mmr_1'), 'MMR 2': getVaxExport(s, 'vaccine_mmr_2'),
-        'JE 1': getVaxExport(s, 'vaccine_je_1'), 'JE 2': getVaxExport(s, 'vaccine_je_2'), 'DTP 4': getVaxExport(s, 'vaccine_dtp_4'),
-        'OPV กระตุ้น': getVaxExport(s, 'vaccine_opv_boost'), 'DTP 5': getVaxExport(s, 'vaccine_dtp_5'),
-        'HPV 1': getVaxExport(s, 'vaccine_hpv_1'), 'HPV 2': getVaxExport(s, 'vaccine_hpv_2'), 'dT': getVaxExport(s, 'vaccine_dt'),
-        'ไข้หวัดใหญ่ 1': getVaxExport(s, 'vaccine_flu_1'), 'ไข้หวัดใหญ่ 2': getVaxExport(s, 'vaccine_flu_2'),
-        'วัคซีนอื่น': s.vaccine_other || '', 'ผลการฉีด': s.vaccine_result || '', 'หมายเหตุ': s.notes || ''
-      }));
+      const rows = targetStudents.map(s => {
+        const analysis = analyzeVaccines(s);
+        let statusText = "ครบตามเกณฑ์";
+        if(analysis.noDob) statusText = "ไม่ระบุวันเกิด";
+        else if(analysis.missing.length > 0) statusText = `ขาดวัคซีน ${analysis.missing.length} เข็ม`;
+
+        return {
+          'ชื่อ-นามสกุล': s.full_name || '', 'ชื่อเล่น': s.nickname || '', 'เลขบัตรประชาชน': s.national_id || '', 'วันเกิด': s.date_of_birth || '',
+          'สถานะวัคซีน (AI)': statusText,
+          'เพศ': s.gender || '', 'หมู่เลือด': s.blood_type || '', 'โรงเรียน': s.school || '', 'ห้องเรียน': s.class_room || '', 'HN': s.hn || '',
+          'น้ำหนัก (กก.)': s.weight || '', 'ส่วนสูง (ซม.)': s.height || '', 'ที่อยู่': buildAddress(s) || '',
+          'ชื่อบิดา': s.father_name || '', 'อาชีพบิดา': s.father_occupation || '', 'โทรศัพท์บิดา': s.father_phone || '',
+          'ชื่อมารดา': s.mother_name || '', 'อาชีพมารดา': s.mother_occupation || '', 'โทรศัพท์มารดา': s.mother_phone || '',
+          'ผู้ปกครอง': s.guardian_name || '', 'ความสัมพันธ์': s.guardian_relation || '', 'โทรศัพท์ผู้ปกครอง': s.guardian_phone || '',
+          'BCG': getVaxExport(s, 'vaccine_bcg'), 'HepB 1': getVaxExport(s, 'vaccine_hepb_1'), 'HepB 2': getVaxExport(s, 'vaccine_hepb_2'),
+          'OPV 1': getVaxExport(s, 'vaccine_opv_1'), 'OPV 2': getVaxExport(s, 'vaccine_opv_2'), 'OPV 3': getVaxExport(s, 'vaccine_opv_3'),
+          'DTP 1': getVaxExport(s, 'vaccine_dtp_1'), 'DTP 2': getVaxExport(s, 'vaccine_dtp_2'), 'DTP 3': getVaxExport(s, 'vaccine_dtp_3'),
+          'Rota 1': getVaxExport(s, 'vaccine_rota_1'), 'Rota 2': getVaxExport(s, 'vaccine_rota_2'), 'Rota 3': getVaxExport(s, 'vaccine_rota_3'),
+          'IPV': getVaxExport(s, 'vaccine_ipv'), 'MMR 1': getVaxExport(s, 'vaccine_mmr_1'), 'MMR 2': getVaxExport(s, 'vaccine_mmr_2'),
+          'JE 1': getVaxExport(s, 'vaccine_je_1'), 'JE 2': getVaxExport(s, 'vaccine_je_2'), 'DTP 4': getVaxExport(s, 'vaccine_dtp_4'),
+          'OPV กระตุ้น': getVaxExport(s, 'vaccine_opv_boost'), 'DTP 5': getVaxExport(s, 'vaccine_dtp_5'),
+          'HPV 1': getVaxExport(s, 'vaccine_hpv_1'), 'HPV 2': getVaxExport(s, 'vaccine_hpv_2'), 'dT': getVaxExport(s, 'vaccine_dt'),
+          'ไข้หวัดใหญ่ 1': getVaxExport(s, 'vaccine_flu_1'), 'ไข้หวัดใหญ่ 2': getVaxExport(s, 'vaccine_flu_2'),
+          'วัคซีนอื่น': s.vaccine_other || '', 'ผลการฉีด': s.vaccine_result || '', 'หมายเหตุ': s.notes || ''
+        };
+      });
       const ws = XLSX.utils.json_to_sheet(rows); const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'นักเรียน');
-      const filename = 'vaccine_data_' + new Date().toISOString().slice(0,10) + '.xlsx';
+      const filename = `${filenamePrefix}_${new Date().toISOString().slice(0,10)}.xlsx`;
       XLSX.writeFile(wb, filename); showStatus('✓ ส่งออก Excel สำเร็จ');
     } catch (err) { showError('ไม่สามารถส่งออก Excel ได้: ' + (err.message || 'ข้อผิดพลาดที่ไม่ทราบ')); }
-  });
+  }
+
+  // ผูก Event ปุ่มส่งออก 2 ปุ่ม
+  document.getElementById('export-excel-filtered-btn').addEventListener('click', () => exportToExcel(currentFilteredStudents, 'vaccine_filtered'));
+  document.getElementById('export-excel-all-btn').addEventListener('click', () => exportToExcel(allStudents, 'vaccine_all_students'));
+
+  // === ระบบวางแผนติดตามวัคซีน (Forecast) ===
+  const forecastModal = document.getElementById('forecast-modal');
+  const fcYearSelect = document.getElementById('fc-year');
+  const fcSchoolSelect = document.getElementById('fc-school');
   
+  document.getElementById('open-forecast-btn').addEventListener('click', () => {
+    // ตั้งค่าปีปัจจุบัน และ ปีหน้า ในตัวเลือก
+    const currentYear = new Date().getFullYear();
+    fcYearSelect.innerHTML = `<option value="${currentYear}">${currentYear}</option><option value="${currentYear+1}">${currentYear+1}</option>`;
+    
+    // ตั้งค่าเดือนปัจจุบันให้เป็นค่าเริ่มต้น
+    document.getElementById('fc-month').value = new Date().getMonth().toString();
+
+    // ดึงรายชื่อโรงเรียนที่มีในระบบ
+    const schools = [...new Set(allStudents.map(s=>s.school).filter(Boolean))].sort();
+    fcSchoolSelect.innerHTML = '<option value="">-- ทุกโรงเรียน --</option>' + schools.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');
+    
+    forecastModal.classList.remove('hidden');
+    lucide.createIcons({root: forecastModal});
+  });
+
+  document.getElementById('close-forecast-btn').addEventListener('click', () => forecastModal.classList.add('hidden'));
+
+  // ฟังก์ชันประมวลผลและส่งออกแผนวัคซีนรายเดือน
+  document.getElementById('btn-execute-forecast').addEventListener('click', () => {
+    const targetMonth = parseInt(document.getElementById('fc-month').value);
+    const targetYear = parseInt(document.getElementById('fc-year').value);
+    const targetSchool = fcSchoolSelect.value;
+    const includeMissing = document.getElementById('fc-include-missing').checked;
+
+    const forecastRows = [];
+
+    allStudents.forEach(s => {
+      // กรองตามโรงเรียนที่เลือก (ถ้ามี)
+      if (targetSchool && s.school !== targetSchool) return;
+
+      const analysis = analyzeVaccines(s);
+      if (analysis.noDob) return; // คำนวณไม่ได้
+
+      const sAge = s.date_of_birth ? calcAge(s.date_of_birth) : '-';
+
+      // เช็ควัคซีนที่เป็นคิวฉีดล่วงหน้า (Upcoming)
+      analysis.upcoming.forEach(v => {
+        const tDate = new Date(v.targetDate);
+        if (tDate.getMonth() === targetMonth && tDate.getFullYear() === targetYear) {
+          forecastRows.push({
+            'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
+            'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ผู้ปกครอง': s.guardian_phone || s.mother_phone || s.father_phone || '-',
+            'วัคซีนที่ต้องฉีด': v.label,
+            'วันที่ครบกำหนดฉีด': formatDate(tDate),
+            'สถานะ': 'ตามกำหนดนัด'
+          });
+        }
+      });
+
+      // เช็ควัคซีนที่ขาด/ล่าช้า (Missing) ถ้าระบุให้รวมด้วย
+      if (includeMissing) {
+        analysis.missing.forEach(v => {
+          const tDate = new Date(v.targetDate);
+          // ถ้ากำหนดฉีดมัน "ก่อน หรือ เท่ากับ" เดือน/ปี เป้าหมาย ให้แสดงด้วย (เพราะถือว่าเลยกำหนดมาแล้ว ยังไงก็ต้องตามตัวมาฉีด)
+          if (tDate.getFullYear() < targetYear || (tDate.getFullYear() === targetYear && tDate.getMonth() <= targetMonth)) {
+            forecastRows.push({
+              'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
+              'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ผู้ปกครอง': s.guardian_phone || s.mother_phone || s.father_phone || '-',
+              'วัคซีนที่ต้องฉีด': v.label,
+              'วันที่ครบกำหนดฉีด': formatDate(tDate),
+              'สถานะ': `ล่าช้า (${v.daysLate} วัน)`
+            });
+          }
+        });
+      }
+    });
+
+    if (forecastRows.length === 0) {
+      alert("ไม่พบข้อมูลนักเรียนที่ต้องรับวัคซีนในเดือนที่ระบุ");
+      return;
+    }
+
+    try {
+      const ws = XLSX.utils.json_to_sheet(forecastRows); 
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'แผนติดตามวัคซีน');
+      const filename = `Vaccine_Plan_${targetYear}_${targetMonth+1}.xlsx`;
+      XLSX.writeFile(wb, filename); 
+      forecastModal.classList.add('hidden');
+    } catch (err) { showError('ไม่สามารถส่งออก Excel ได้'); }
+  });
+
   function getVaxCellDisplay(s, baseKey) {
       const d = s[baseKey + '_date'], p = s[baseKey + '_provider'], l = s[baseKey + '_location'];
       if(!d && !p && !l) return '<div class="text-center py-2 text-black font-bold">-</div>';
