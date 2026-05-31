@@ -98,10 +98,10 @@
 
   <style>
     :root {
-      --bg-main: #f1f5f9;       /* พื้นหลังเว็บสีฟ้าเทาอ่อน */
-      --surface: #eff6ff;       /* สีน้ำเงินอ่อน (blue-50) */
-      --surface2: #e0f2fe;      /* สีน้ำเงินสว่างขึ้น สำหรับ input (blue-100) */
-      --accent: #2563eb;        /* สีน้ำเงินหลัก */
+      --bg-main: #f1f5f9;       
+      --surface: #eff6ff;       
+      --surface2: #e0f2fe;      
+      --accent: #2563eb;        
       --emerald: #059669;
       --rose: #e11d48;
     }
@@ -280,27 +280,39 @@
 
     <!-- LIST -->
     <section id="view-list" class="hidden fade-in">
-      <div class="flex flex-col sm:flex-row gap-3 mb-5">
-        <div class="relative flex-1">
+      <div class="flex flex-col sm:flex-row gap-3 mb-5 bg-white p-4 rounded-xl border border-blue-200 shadow-sm flex-wrap items-center">
+        <div class="relative flex-1 min-w-[200px] w-full sm:w-auto">
           <i data-lucide="search" style="width:18px;height:18px;color:#000;position:absolute;left:12px;top:50%;transform:translateY(-50%);"></i> 
           <input id="search-input" type="text" placeholder="ค้นหาชื่อ, สกุล, รหัสประชาชน..." class="w-full pl-10 shadow-sm" style="font-size:14px;">
         </div>
-        <select id="filter-school" class="shadow-sm" style="font-size:14px;min-width:140px;">
+        <select id="filter-school" class="shadow-sm border-slate-300" style="font-size:14px;min-width:140px; flex:1;">
           <option value="">ทุกโรงเรียน</option>
         </select>
-        <select id="filter-class" class="shadow-sm" style="font-size:14px;min-width:140px;">
+        <select id="filter-class" class="shadow-sm border-slate-300" style="font-size:14px;min-width:140px; flex:1;">
           <option value="">ทุกห้องเรียน</option>
         </select> 
-        <!-- ตัวกรองสถานะวัคซีน -->
-        <select id="filter-status" class="shadow-sm bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-black font-bold">
+        <select id="filter-status" class="shadow-sm border-slate-300 bg-white" style="font-size:14px;min-width:160px; flex:1;">
           <option value="">สถานะวัคซีน (ทั้งหมด)</option>
           <option value="missing">🚨 ขาดวัคซีน / ล่าช้า</option>
           <option value="complete">✅ ครบตามวัย / ยังไม่ถึงเกณฑ์</option>
         </select> 
-        <button type="button" id="export-excel-btn" class="flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm hover:brightness-105" style="background:var(--emerald);color:#fff;">
-          <i data-lucide="download" style="width:16px;height:16px;"></i><span>ส่งออก Excel</span>
-        </button>
+        
+        <div class="w-full h-px bg-blue-100 my-1 sm:hidden"></div>
+        
+        <!-- กลุ่มปุ่ม ส่งออก / วางแผน -->
+        <div class="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+          <button type="button" id="export-excel-filtered-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white whitespace-nowrap">
+            <i data-lucide="file-spreadsheet" style="width:16px;height:16px;"></i><span>ส่งออก (ตามตัวกรอง)</span>
+          </button>
+          <button type="button" id="export-excel-all-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-colors shadow-sm bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap">
+            <i data-lucide="download" style="width:16px;height:16px;"></i><span>ส่งออกทั้งหมด</span>
+          </button>
+          <button type="button" id="open-forecast-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-colors shadow-sm bg-amber-500 hover:bg-amber-600 text-white whitespace-nowrap">
+            <i data-lucide="calendar-clock" style="width:16px;height:16px;"></i><span>วางแผนติดตามวัคซีน</span>
+          </button>
+        </div>
       </div>
+      
       <div id="student-list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       <div id="list-empty" class="text-center py-16 hidden">
         <i data-lucide="user-search" class="text-black mx-auto mb-4" style="width:48px;height:48px;display:block;"></i>
@@ -772,12 +784,59 @@
       <div id="modal-body" class="p-5 sm:p-6 space-y-6"></div>
     </div>
   </div>
+
+  <!-- Forecast Modal (หน้าต่างวางแผนติดตามวัคซีน) -->
+  <div id="forecast-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md border-2 border-amber-400 shadow-2xl fade-in overflow-hidden">
+      <div class="bg-amber-100 p-4 border-b border-amber-200 flex items-center gap-3">
+        <i data-lucide="calendar-clock" class="text-amber-600"></i>
+        <h2 class="font-black text-lg text-amber-900">วางแผนติดตามวัคซีน (รายเดือน)</h2>
+      </div>
+      <div class="p-5 space-y-4">
+        <p class="text-sm font-bold text-slate-600">เลือกระบุเดือนและปีที่ต้องการดูแผนการนัดหมายฉีดวัคซีน ระบบจะส่งออกเป็นไฟล์ Excel</p>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-black">เดือนเป้าหมาย</label>
+            <select id="fc-month" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm">
+              <option value="0">มกราคม</option><option value="1">กุมภาพันธ์</option>
+              <option value="2">มีนาคม</option><option value="3">เมษายน</option>
+              <option value="4">พฤษภาคม</option><option value="5">มิถุนายน</option>
+              <option value="6">กรกฎาคม</option><option value="7">สิงหาคม</option>
+              <option value="8">กันยายน</option><option value="9">ตุลาคม</option>
+              <option value="10">พฤศจิกายน</option><option value="11">ธันวาคม</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-black">ปี พ.ศ.</label>
+            <select id="fc-year" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm"></select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold mb-1 text-black">กรองตามโรงเรียน</label>
+          <select id="fc-school" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm"></select>
+        </div>
+        
+        <label class="flex items-center gap-2 mt-2 cursor-pointer bg-slate-50 p-2 rounded-lg border border-slate-200">
+          <input type="checkbox" id="fc-include-missing" checked class="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500">
+          <span class="text-xs font-bold text-rose-600">รวมเด็กที่ "ขาดนัด/ล่าช้า" สะสมมาถึงเดือนนี้ด้วย</span>
+        </label>
+
+      </div>
+      <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
+        <button type="button" id="close-forecast-btn" class="px-4 py-2 rounded-lg font-bold text-sm bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">ยกเลิก</button>
+        <button type="button" id="btn-execute-forecast" class="px-4 py-2 rounded-lg font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-2 shadow-sm"><i data-lucide="download" style="width:16px;height:16px;"></i> ส่งออกแผนการนัด (Excel)</button>
+      </div>
+    </div>
+  </div>
   
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
 (function(){
   let allStudents = [];
+  let currentFilteredStudents = []; // เก็บรายชื่อที่ถูกกรองล่าสุด
   let editingRecord = null;
   let deleteConfirmationPending = null;
 
@@ -1117,7 +1176,7 @@
     const fs = document.getElementById('filter-school').value;
     const fStatus = document.getElementById('filter-status').value;
     
-    let filtered = allStudents.filter(s => {
+    currentFilteredStudents = allStudents.filter(s => {
       const matchQ = !q || (s.full_name||'').toLowerCase().includes(q) || (s.national_id||'').includes(q) || (s.nickname||'').toLowerCase().includes(q);
       const matchC = !fc || s.class_room===fc;
       const matchS = !fs || s.school===fs;
@@ -1131,13 +1190,13 @@
     });
     
     const container = document.getElementById('student-list'), empty = document.getElementById('list-empty');
-    if (!filtered.length) { container.innerHTML=''; empty.classList.remove('hidden'); return; }
+    if (!currentFilteredStudents.length) { container.innerHTML=''; empty.classList.remove('hidden'); return; }
     empty.classList.add('hidden');
     const existing = new Map([...container.children].map(el=>[el.dataset.sid,el]));
-    const newIds = new Set(filtered.map(s=>s.__backendId));
+    const newIds = new Set(currentFilteredStudents.map(s=>s.__backendId));
     existing.forEach((el,id)=>{ if(!newIds.has(id)) el.remove(); });
     
-    filtered.forEach(s => {
+    currentFilteredStudents.forEach(s => {
       const id=s.__backendId; let el=existing.get(id);
       if(!el){ 
         el=document.createElement('button'); 
@@ -1210,32 +1269,6 @@
   document.getElementById('dash-filter-school').addEventListener('change', renderDashboard);
   document.getElementById('dash-filter-class').addEventListener('change', renderDashboard);
 
-  // === ตัวแปรเก็บรายชื่อที่ผ่านการกรอง (เพื่อใช้ตอน Export ตามตัวกรอง) ===
-  let currentFilteredStudents = [];
-  
-  // สร้าง Hook ดักจับตอน renderList เพื่ออัปเดต currentFilteredStudents
-  const originalRenderList = renderList;
-  renderList = function() {
-    const q = document.getElementById('search-input').value.toLowerCase();
-    const fc = document.getElementById('filter-class').value;
-    const fs = document.getElementById('filter-school').value;
-    const fStatus = document.getElementById('filter-status').value;
-    
-    currentFilteredStudents = allStudents.filter(s => {
-      const matchQ = !q || (s.full_name||'').toLowerCase().includes(q) || (s.national_id||'').includes(q) || (s.nickname||'').toLowerCase().includes(q);
-      const matchC = !fc || s.class_room===fc;
-      const matchS = !fs || s.school===fs;
-      
-      const analysis = analyzeVaccines(s);
-      let matchStatus = true;
-      if (fStatus === 'missing') matchStatus = analysis.missing.length > 0;
-      if (fStatus === 'complete') matchStatus = analysis.missing.length === 0 && !analysis.noDob;
-
-      return matchQ && matchC && matchS && matchStatus;
-    });
-    originalRenderList(); // เรียกฟังก์ชันเดิมทำงานต่อ
-  };
-
   function getVaxExport(s, baseKey) {
     const date = s[baseKey + '_date'];
     if (!date) return '';
@@ -1246,7 +1279,7 @@
     return formatDate(date) + (extra.length ? ` [${extra.join(', ')}]` : '');
   }
 
-  // === ฟังก์ชันส่งออก Excel หลัก (รับค่า array นักเรียนที่ต้องการส่งออก) ===
+  // === ฟังก์ชันส่งออก Excel หลัก ===
   function exportToExcel(targetStudents, filenamePrefix) {
     if (!targetStudents || !targetStudents.length) { showError('ไม่มีข้อมูลเพื่อส่งออก'); return; }
     if (typeof XLSX === 'undefined') { showError('ไลบรารี Excel ยังไม่พร้อม กรุณารอสักครู่'); return; }
@@ -1284,7 +1317,7 @@
     } catch (err) { showError('ไม่สามารถส่งออก Excel ได้: ' + (err.message || 'ข้อผิดพลาดที่ไม่ทราบ')); }
   }
 
-  // ผูก Event ปุ่มส่งออก 2 ปุ่ม
+  // ผูก Event ปุ่มส่งออก
   document.getElementById('export-excel-filtered-btn').addEventListener('click', () => exportToExcel(currentFilteredStudents, 'vaccine_filtered'));
   document.getElementById('export-excel-all-btn').addEventListener('click', () => exportToExcel(allStudents, 'vaccine_all_students'));
 
@@ -1294,14 +1327,10 @@
   const fcSchoolSelect = document.getElementById('fc-school');
   
   document.getElementById('open-forecast-btn').addEventListener('click', () => {
-    // ตั้งค่าปีปัจจุบัน และ ปีหน้า ในตัวเลือก
     const currentYear = new Date().getFullYear();
     fcYearSelect.innerHTML = `<option value="${currentYear}">${currentYear}</option><option value="${currentYear+1}">${currentYear+1}</option>`;
-    
-    // ตั้งค่าเดือนปัจจุบันให้เป็นค่าเริ่มต้น
     document.getElementById('fc-month').value = new Date().getMonth().toString();
 
-    // ดึงรายชื่อโรงเรียนที่มีในระบบ
     const schools = [...new Set(allStudents.map(s=>s.school).filter(Boolean))].sort();
     fcSchoolSelect.innerHTML = '<option value="">-- ทุกโรงเรียน --</option>' + schools.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');
     
@@ -1311,7 +1340,6 @@
 
   document.getElementById('close-forecast-btn').addEventListener('click', () => forecastModal.classList.add('hidden'));
 
-  // ฟังก์ชันประมวลผลและส่งออกแผนวัคซีนรายเดือน
   document.getElementById('btn-execute-forecast').addEventListener('click', () => {
     const targetMonth = parseInt(document.getElementById('fc-month').value);
     const targetYear = parseInt(document.getElementById('fc-year').value);
@@ -1321,15 +1349,14 @@
     const forecastRows = [];
 
     allStudents.forEach(s => {
-      // กรองตามโรงเรียนที่เลือก (ถ้ามี)
       if (targetSchool && s.school !== targetSchool) return;
 
       const analysis = analyzeVaccines(s);
-      if (analysis.noDob) return; // คำนวณไม่ได้
+      if (analysis.noDob) return; 
 
       const sAge = s.date_of_birth ? calcAge(s.date_of_birth) : '-';
 
-      // เช็ควัคซีนที่เป็นคิวฉีดล่วงหน้า (Upcoming)
+      // เช็คคิวฉีดล่วงหน้า (Upcoming)
       analysis.upcoming.forEach(v => {
         const tDate = new Date(v.targetDate);
         if (tDate.getMonth() === targetMonth && tDate.getFullYear() === targetYear) {
@@ -1343,11 +1370,10 @@
         }
       });
 
-      // เช็ควัคซีนที่ขาด/ล่าช้า (Missing) ถ้าระบุให้รวมด้วย
+      // เช็ควัคซีนที่ขาด/ล่าช้า (Missing)
       if (includeMissing) {
         analysis.missing.forEach(v => {
           const tDate = new Date(v.targetDate);
-          // ถ้ากำหนดฉีดมัน "ก่อน หรือ เท่ากับ" เดือน/ปี เป้าหมาย ให้แสดงด้วย (เพราะถือว่าเลยกำหนดมาแล้ว ยังไงก็ต้องตามตัวมาฉีด)
           if (tDate.getFullYear() < targetYear || (tDate.getFullYear() === targetYear && tDate.getMonth() <= targetMonth)) {
             forecastRows.push({
               'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
