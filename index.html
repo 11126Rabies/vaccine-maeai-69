@@ -10,6 +10,10 @@
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/editing_sdk.js"></script>
+  
   <!-- ระบบเชื่อมต่อฐานข้อมูล Google Sheets -->
   <script>
     const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwO9SbM466177Q3b0cEBUuRyi3b5cdw09zImtAGQVj7UN64wjEjCiu2xS1pMWgz9u0s/exec";
@@ -156,7 +160,7 @@
     <section id="view-dashboard" class="fade-in">
       <div class="relative rounded-2xl border border-blue-300 p-6 sm:p-8 mb-6 overflow-hidden bg-gradient-to-r from-blue-600 to-blue-400 shadow-md shadow-gray-400/50">
         <div class="flex flex-col md:flex-row items-center gap-6 relative z-10">
-          <img src="logo.png" alt="โลโก้ รพ.แม่อาย" class="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-md bg-white rounded-full p-1">
+          <img src="logo.png" alt="โลโก้ รพ.แม่อาย" onerror="this.src='https://placehold.co/100x100/ffffff/2563eb?text=Logo'" class="w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-md bg-white rounded-full p-1 border-2 border-white">
           <div class="text-center md:text-left">
             <h2 class="font-bold text-2xl md:text-3xl text-white mb-2 drop-shadow-sm">Dashboard ระบบบันทึกข้อมูลวัคซีนอนามัยโรงเรียน</h2>
             <p class="text-blue-100 font-bold text-lg drop-shadow-sm">กลุ่มงานควบคุมโรค โรงพยาบาลแม่อาย</p>
@@ -239,6 +243,12 @@
         <select id="filter-class" class="shadow-sm" style="font-size:14px;min-width:140px;">
           <option value="">ทุกห้องเรียน</option>
         </select> 
+        <!-- เพิ่มตัวกรองสถานะวัคซีนตามอายุ -->
+        <select id="filter-status" class="shadow-sm" style="font-size:14px;min-width:140px;">
+          <option value="">สถานะวัคซีน (ทั้งหมด)</option>
+          <option value="missing">🚨 ขาดวัคซีน</option>
+          <option value="complete">✅ ครบตามวัย</option>
+        </select> 
         <button type="button" id="export-excel-btn" class="flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm hover:brightness-105" style="background:var(--emerald);color:#fff;">
           <i data-lucide="download" style="width:16px;height:16px;"></i><span>ส่งออก Excel</span>
         </button>
@@ -258,9 +268,9 @@
           <button type="button" id="cancel-edit-btn" class="hidden text-sm px-4 py-1.5 rounded-lg transition-colors border border-black text-black bg-white hover:bg-blue-100 shadow-sm font-bold">ยกเลิกการแก้ไข</button>
         </div>
         
+        <!-- ข้อมูลส่วนตัว -->
         <fieldset class="rounded-xl p-5 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50">
           <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">ข้อมูลส่วนตัว</legend>
-          
           <div class="flex items-center gap-4 mt-2 mb-5 p-4 rounded-xl border border-blue-200 bg-white">
             <div id="img-preview-container" class="w-20 h-20 rounded-xl bg-blue-50 flex items-center justify-center overflow-hidden border border-blue-300 flex-shrink-0 shadow-sm">
               <i data-lucide="camera" class="text-blue-400" id="img-placeholder-icon"></i>
@@ -273,7 +283,6 @@
               <input type="hidden" id="f-image-base64">
             </div>
           </div>
-
           <div class="grid sm:grid-cols-2 gap-4">
             <div><label for="f-name" class="block text-xs font-bold mb-1 text-black">ชื่อ-นามสกุล <span class="text-rose-600">*</span></label><input id="f-name" required class="w-full"></div>
             <div><label for="f-nick" class="block text-xs font-bold mb-1 text-black">ชื่อเล่น</label><input id="f-nick" class="w-full"></div>
@@ -325,9 +334,7 @@
             <div><label for="f-father-occ" class="block text-xs font-bold mb-1 text-black">อาชีพบิดา</label><input id="f-father-occ" class="w-full"></div>
             <div><label for="f-father-phone" class="block text-xs font-bold mb-1 text-black">เบอร์โทรศัพท์บิดา</label><input id="f-father-phone" type="tel" class="w-full"></div>
             <div class="sm:col-span-3"><label for="f-father-addr" class="block text-xs font-bold mb-1 text-black">ที่อยู่บิดา (ถ้าต่างจากด้านบน)</label><textarea id="f-father-addr" rows="1" class="w-full"></textarea></div>
-            
             <div class="col-span-full border-t border-blue-200 my-1"></div>
-            
             <div><label for="f-mother" class="block text-xs font-bold mb-1 text-black">ชื่อ-สกุลมารดา</label><input id="f-mother" class="w-full"></div>
             <div><label for="f-mother-occ" class="block text-xs font-bold mb-1 text-black">อาชีพมารดา</label><input id="f-mother-occ" class="w-full"></div>
             <div><label for="f-mother-phone" class="block text-xs font-bold mb-1 text-black">เบอร์โทรศัพท์มารดา</label><input id="f-mother-phone" type="tel" class="w-full"></div>
@@ -366,9 +373,7 @@
                   <td class="text-center text-xs font-bold text-black">แรกเกิด</td>
                   <td>
                     <div class="vax-input-group">
-                      <input type="date" id="f-vbcg" class="vax-input" title="วันที่ฉีด">
-                      <input type="text" id="f-vbcg-p" class="vax-input" placeholder="ผู้ฉีด">
-                      <input type="text" id="f-vbcg-l" class="vax-input" placeholder="สถานที่">
+                      <input type="date" id="f-vbcg" class="vax-input" title="วันที่ฉีด"><input type="text" id="f-vbcg-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vbcg-l" class="vax-input" placeholder="สถานที่">
                     </div>
                   </td>
                   <td class="bg-blue-100/50"></td><td class="bg-blue-100/50"></td>
@@ -377,15 +382,10 @@
                   <td class="font-bold text-black">ตับอักเสบบี (HB)</td>
                   <td class="text-center text-xs font-bold text-black">แรกเกิด, 1 ด.<br>(เฉพาะแม่เป็นพาหะ)</td>
                   <td>
-                    <div class="vax-input-group">
-                      <input type="date" id="f-vhb1" class="vax-input"><input type="text" id="f-vhb1-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vhb1-l" class="vax-input" placeholder="สถานที่">
-                    </div>
+                    <div class="vax-input-group"><input type="date" id="f-vhb1" class="vax-input"><input type="text" id="f-vhb1-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vhb1-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
                   <td>
-                    <div class="vax-input-group">
-                      <span class="text-[10px] font-bold text-black text-center mb-1">อายุ 1 เดือน</span>
-                      <input type="date" id="f-vhb2" class="vax-input"><input type="text" id="f-vhb2-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vhb2-l" class="vax-input" placeholder="สถานที่">
-                    </div>
+                    <div class="vax-input-group"><span class="text-[10px] font-bold text-black text-center mb-1">อายุ 1 เดือน</span><input type="date" id="f-vhb2" class="vax-input"><input type="text" id="f-vhb2-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vhb2-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
                   <td class="bg-blue-100/50"></td>
                 </tr>
@@ -495,8 +495,7 @@
                   <td>
                     <div class="vax-input-group"><input type="date" id="f-vdt" class="vax-input"><input type="text" id="f-vdt-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vdt-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
-                  <td class="bg-blue-100/50"></td>
-                  <td class="bg-blue-100/50"></td>
+                  <td class="bg-blue-100/50"></td><td class="bg-blue-100/50"></td>
                 </tr>
                 <tr>
                   <td class="font-bold text-black">ฉีดวัคซีนไข้หวัดใหญ่ ประจำปี</td>
@@ -543,30 +542,115 @@
 
     <!-- KNOWLEDGE BASE -->
     <section id="view-knowledge" class="hidden fade-in">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="font-bold text-2xl mb-6 text-black">คลังความรู้และคู่มือวัคซีน</h2>
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="rounded-xl p-6 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50 card-hover">
-            <div class="flex items-center gap-3 mb-4"><i data-lucide="file-text" style="width:32px;height:32px;color:var(--rose);"></i>
-              <h3 class="font-bold text-lg text-black">คู่มือการให้วัคซีน 2566</h3>
+      <div class="max-w-5xl mx-auto">
+        <h2 class="font-black text-2xl mb-6 text-black">คลังความรู้และตารางวัคซีน ปี 2569</h2>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1 space-y-6">
+            <div class="rounded-xl p-5 border border-blue-200 bg-white shadow-md shadow-gray-400/50">
+              <h3 class="font-bold text-lg text-blue-700 mb-3 flex items-center gap-2"><i data-lucide="book" style="width:20px;height:20px;"></i> ตัวอย่างสมุดสีชมพู</h3>
+              <p class="text-sm font-bold text-slate-600 mb-4">แนวทางการลงบันทึกประวัติการได้รับวัคซีนตามแผนงานสร้างเสริมภูมิคุ้มกันโรคของประเทศไทย</p>
+              <div class="rounded-lg overflow-hidden border-2 border-black">
+                 <img src="240569 2.jpg" alt="ตัวอย่างการบันทึกวัคซีน" onerror="this.src='https://placehold.co/300x400/ffffff/2563eb?text=Pink+Book+Example'" class="w-full h-auto object-cover">
+              </div>
+              <p class="text-xs text-rose-600 mt-3 font-bold">* รูปตัวอย่างการลงบันทึกประวัติ</p>
             </div>
-            <p class="text-sm mb-5 font-bold text-black">คู่มือสำหรับบุคลากรทางการแพทย์ กรมควบคุมโรค กระทรวงสาธารณสุข</p>
-            <a href="https://www.ddc.moph.go.th/uploads/publish/136.pdf" target="_blank" rel="noopener noreferrer" class="inline-block px-5 py-2 rounded-lg text-sm font-bold transition-colors hover:bg-blue-700 shadow-md" style="background:var(--accent);color:#fff;">เปิดอ่านคู่มือ (PDF)</a>
-          </div>
-          <div class="rounded-xl p-6 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50 card-hover">
-            <div class="flex items-center gap-3 mb-4"><i data-lucide="file-text" style="width:32px;height:32px;color:var(--rose);"></i>
-              <h3 class="font-bold text-lg text-black">ตารางการให้วัคซีน (EPI)</h3>
+
+            <div class="rounded-xl p-5 border border-blue-300 bg-blue-100 shadow-sm flex items-start gap-3">
+              <i data-lucide="info" class="text-blue-700 mt-1" style="width:24px;height:24px;"></i>
+              <div>
+                 <h3 class="font-black mb-1 text-black">อ้างอิงข้อมูลวิชาการ</h3>
+                 <p class="text-xs font-bold text-slate-700">อ้างอิงจากประกาศกรมควบคุมโรค: คำแนะนำการสร้างเสริมภูมิคุ้มกันโรคตลอดช่วงชีวิต สำหรับประชาชน ปี 2569 และตารางวัคซีน สมาคมโรคติดเชื้อในเด็กแห่งประเทศไทย (PIDST)</p>
+              </div>
             </div>
-            <p class="text-sm mb-5 font-bold text-black">แผนงานสร้างเสริมภูมิคุ้มกันโรค กระทรวงสาธารณสุข สำหรับเด็กไทย</p>
-            <a href="https://ddc.moph.go.th/uploads/publish/721.pdf" target="_blank" rel="noopener noreferrer" class="inline-block px-5 py-2 rounded-lg text-sm font-bold transition-colors hover:bg-blue-700 shadow-md" style="background:var(--accent);color:#fff;">เปิดอ่านตาราง (PDF)</a>
           </div>
-        </div>
-        <div class="rounded-xl p-5 border border-blue-300 mt-6 flex items-center gap-4 bg-blue-100 shadow-sm">
-           <i data-lucide="info" class="text-blue-700" style="width:28px;height:28px;"></i>
-           <div>
-             <h3 class="font-bold mb-1 text-black">ข้อมูลเพิ่มเติมด้านวิชาการ</h3>
-             <p class="text-sm font-bold text-black">กรุณาติดต่อกองโรคป้องกันด้วยวัคซีน กรมควบคุมโรค หากมีข้อสงสัยด้านวิชาการและการปฏิบัติงาน</p>
-           </div>
+
+          <div class="lg:col-span-2">
+            <div class="rounded-xl border border-blue-200 bg-white shadow-md shadow-gray-400/50 overflow-hidden">
+              <div class="bg-blue-600 p-4 border-b border-blue-700 flex items-center gap-2">
+                 <i data-lucide="calendar-clock" class="text-white" style="width:24px;height:24px;"></i>
+                 <h3 class="font-black text-white text-lg">ตารางการให้วัคซีนในเด็กไทยและวัยรุ่น ปี 2569</h3>
+              </div>
+              <div class="p-0 overflow-x-auto">
+                 <table class="w-full text-sm text-left border-collapse">
+                    <thead>
+                       <tr class="bg-blue-100 text-black font-black border-b-2 border-blue-200">
+                          <th class="p-3 whitespace-nowrap border-r border-blue-200">อายุที่รับวัคซีน</th>
+                          <th class="p-3">ชนิดวัคซีนที่ต้องได้รับตามแผนงานฯ</th>
+                       </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-100">
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">แรกเกิด</td>
+                          <td class="p-3 font-bold text-slate-700">วัณโรค <span class="text-blue-600">(BCG)</span>, ตับอักเสบบี <span class="text-blue-600">(HB1)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">1 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">ตับอักเสบบี <span class="text-blue-600">(HB2)</span> <span class="text-xs text-rose-500 font-bold ml-1">*เฉพาะกรณีมารดาเป็นพาหะ</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">2 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ <span class="text-blue-600">(DTwP-HB-Hib-1)</span>, โปลิโอฉีด <span class="text-blue-600">(IPV1)</span>, โรต้า <span class="text-blue-600">(Rota1)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">4 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ <span class="text-blue-600">(DTwP-HB-Hib-2)</span>, โปลิโอฉีด <span class="text-blue-600">(IPV2)</span>, โรต้า <span class="text-blue-600">(Rota2)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">6 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ <span class="text-blue-600">(DTwP-HB-Hib-3)</span>, โปลิโอกิน <span class="text-blue-600">(OPV1)</span>, โรต้า <span class="text-blue-600">(Rota3 *กรณีวัคซีนบางชนิด)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">9-12 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">หัด-คางทูม-หัดเยอรมัน <span class="text-blue-600">(MMR1)</span>, ไข้สมองอักเสบเจอี <span class="text-blue-600">(JE1)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">18 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน กระตุ้น <span class="text-blue-600">(DTwP)</span>, โปลิโอกิน กระตุ้น <span class="text-blue-600">(OPV)</span>, หัดฯ <span class="text-blue-600">(MMR2)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">2 - 2.5 ปี</td>
+                          <td class="p-3 font-bold text-slate-700">ไข้สมองอักเสบเจอี <span class="text-blue-600">(JE2)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">4-6 ปี</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน กระตุ้น 2 <span class="text-blue-600">(DTwP)</span>, โปลิโอกิน กระตุ้น 2 <span class="text-blue-600">(OPV)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-amber-50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">11-12 ปี (ชั้น ป.5)</td>
+                          <td class="p-3 font-bold text-slate-700">ฉีดวัคซีนป้องกันเอชพีวี <span class="text-blue-600">(HPV)</span> <span class="text-xs text-rose-600 font-bold ml-1">*เฉพาะนักเรียนหญิง ชั้น ป.5</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-emerald-50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">12 ปี (ชั้น ป.6)</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก <span class="text-blue-600">(dT)</span> <span class="text-xs text-emerald-700 font-bold ml-1">*นักเรียนชั้น ป.6 ทุกคน</span></td>
+                       </tr>
+                    </tbody>
+                 </table>
+              </div>
+              
+              <div class="p-5 bg-white border-t border-blue-200">
+                <h4 class="font-black text-black mb-3 flex items-center gap-2"><i data-lucide="syringe" style="width:20px;height:20px;" class="text-emerald-600"></i> วัคซีนทางเลือกและวัคซีนแนะนำเพิ่มเติม</h4>
+                <div class="grid sm:grid-cols-2 gap-4">
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">ไข้หวัดใหญ่ (Influenza)</strong>
+                      <span class="text-sm font-bold text-slate-600">แนะนำให้ฉีดปีละ 1 เข็ม (เด็กอายุต่ำกว่า 9 ปี รับครั้งแรกให้ 2 เข็ม ห่างกัน 1 เดือน)</span>
+                   </div>
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">ไข้เลือดออก (Dengue)</strong>
+                      <span class="text-sm font-bold text-slate-600">อายุ 4 ปีขึ้นไป ฉีด 2 เข็ม ห่างกัน 3 เดือน (พิจารณาฉีดในกลุ่มเสี่ยง)</span>
+                   </div>
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">อีสุกอีใส (VZV)</strong>
+                      <span class="text-sm font-bold text-slate-600">เข็มแรกอายุ 12-18 เดือน, เข็มที่ 2 อายุ 4-6 ปี</span>
+                   </div>
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">อาร์เอสวี (RSV)</strong>
+                      <span class="text-sm font-bold text-slate-600">แนะนำฉีดในหญิงตั้งครรภ์ หรือ ภูมิคุ้มกันสำเร็จรูป (Nirsevimab) ในเด็กอายุน้อยกว่า 8 เดือน (เฉพาะฤดูกาลระบาด)</span>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -595,6 +679,7 @@
   </div>
   
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <script>
 (function(){
   let allStudents = [];
@@ -630,7 +715,6 @@
     'f-notes':'notes','f-vresult':'vaccine_result','f-vother':'vaccine_other',
     'f-image-base64':'profile_image',
     
-    // Mapping วัคซีน
     'f-vbcg':'vaccine_bcg_date', 'f-vbcg-p':'vaccine_bcg_provider', 'f-vbcg-l':'vaccine_bcg_location',
     'f-vhb1':'vaccine_hepb_1_date', 'f-vhb1-p':'vaccine_hepb_1_provider', 'f-vhb1-l':'vaccine_hepb_1_location',
     'f-vhb2':'vaccine_hepb_2_date', 'f-vhb2-p':'vaccine_hepb_2_provider', 'f-vhb2-l':'vaccine_hepb_2_location',
@@ -661,7 +745,73 @@
   window.editStudent = editStudent;
   window.openModal = openModal;
 
-  // จัดการอัปโหลดและบีบอัดรูปภาพโปรไฟล์
+  // ระบบวิเคราะห์สถานะวัคซีนตามอายุ (EPI 2569)
+  function analyzeVaccines(s) {
+    if (!s.date_of_birth) return { missing: [], upcoming: [], received: [], isComplete: false, noDob: true };
+
+    const dob = new Date(s.date_of_birth);
+    const now = new Date();
+    let ageMonths = (now.getFullYear() - dob.getFullYear()) * 12 + now.getMonth() - dob.getMonth();
+    if (now.getDate() < dob.getDate()) ageMonths--;
+
+    const missing = [];
+    const upcoming = [];
+    const received = [];
+
+    // เกณฑ์มาตรฐาน EPI 2569
+    const EPI_SCHEDULE = [
+      { key: 'vaccine_bcg', label: 'วัณโรค (BCG)', dueMonths: 0 },
+      { key: 'vaccine_hepb_1', label: 'ตับอักเสบบี เข็ม 1', dueMonths: 0 },
+      { key: 'vaccine_opv_1', label: 'โปลิโอหยอด (OPV1)', dueMonths: 2 },
+      { key: 'vaccine_dtp_1', label: 'คอตีบ-บาดทะยัก-ไอกรน (DTP1)', dueMonths: 2 },
+      { key: 'vaccine_rota_1', label: 'โรต้า (Rota1)', dueMonths: 2 },
+      { key: 'vaccine_opv_2', label: 'โปลิโอหยอด (OPV2)', dueMonths: 4 },
+      { key: 'vaccine_dtp_2', label: 'คอตีบ-บาดทะยัก-ไอกรน (DTP2)', dueMonths: 4 },
+      { key: 'vaccine_rota_2', label: 'โรต้า (Rota2)', dueMonths: 4 },
+      { key: 'vaccine_ipv', label: 'โปลิโอฉีด (IPV)', dueMonths: 4 },
+      { key: 'vaccine_opv_3', label: 'โปลิโอหยอด (OPV3)', dueMonths: 6 },
+      { key: 'vaccine_dtp_3', label: 'คอตีบ-บาดทะยัก-ไอกรน (DTP3)', dueMonths: 6 },
+      { key: 'vaccine_mmr_1', label: 'หัด-หัดเยอรมัน-คางทูม (MMR1)', dueMonths: 9 },
+      { key: 'vaccine_je_1', label: 'ไข้สมองอักเสบเจอี (JE1)', dueMonths: 12 },
+      { key: 'vaccine_dtp_4', label: 'คอตีบ-บาดทะยัก กระตุ้น (DTP4)', dueMonths: 18 },
+      { key: 'vaccine_opv_boost', label: 'โปลิโอหยอด กระตุ้น (OPV4)', dueMonths: 18 },
+      { key: 'vaccine_mmr_2', label: 'หัด-หัดเยอรมัน-คางทูม (MMR2)', dueMonths: 18 },
+      { key: 'vaccine_je_2', label: 'ไข้สมองอักเสบเจอี (JE2)', dueMonths: 30 },
+      { key: 'vaccine_dtp_5', label: 'คอตีบ-บาดทะยัก กระตุ้น (DTP5)', dueMonths: 48 },
+      { key: 'vaccine_hpv_1', label: 'เอชพีวี (HPV) เข็ม 1', dueMonths: 132, condition: (st) => st.gender === 'หญิง' },
+      { key: 'vaccine_hpv_2', label: 'เอชพีวี (HPV) เข็ม 2', dueMonths: 138, condition: (st) => st.gender === 'หญิง' },
+      { key: 'vaccine_dt', label: 'คอตีบ-บาดทะยัก (dT)', dueMonths: 144 }
+    ];
+
+    EPI_SCHEDULE.forEach(rule => {
+      // ข้ามหากไม่ตรงเงื่อนไข (เช่น เป็นเด็กชาย ไม่ต้องรับ HPV)
+      if (rule.condition && !rule.condition(s)) return;
+
+      const hasVaccine = !!s[rule.key + '_date'];
+      
+      if (hasVaccine) {
+        received.push(rule);
+      } else {
+        if (ageMonths >= rule.dueMonths) {
+          missing.push(rule); // เลยกำหนดอายุแล้ว ถือว่าขาด
+        } else {
+          // คำนวณวันที่คาดการณ์ในอนาคตที่ควรฉีด
+          const estDate = new Date(dob);
+          estDate.setMonth(estDate.getMonth() + rule.dueMonths);
+          
+          const diffMonths = rule.dueMonths - ageMonths;
+          const relativeStr = diffMonths >= 12 
+              ? `อีก ${Math.floor(diffMonths/12)} ปี ${diffMonths%12 > 0 ? diffMonths%12 + ' เดือน' : ''}`
+              : `อีก ${diffMonths} เดือน`;
+
+          upcoming.push({ ...rule, estDate, relativeStr });
+        }
+      }
+    });
+
+    return { missing, upcoming, received, isComplete: missing.length === 0, noDob: false };
+  }
+
   document.getElementById('f-image-file').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -688,7 +838,6 @@
     reader.readAsDataURL(file);
   });
 
-  // Tabs
   document.querySelectorAll('[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-tab]').forEach(b => { b.className = b.className.replace('tab-active','tab-inactive'); b.setAttribute('aria-selected','false'); });
@@ -771,12 +920,20 @@
     const q = document.getElementById('search-input').value.toLowerCase();
     const fc = document.getElementById('filter-class').value;
     const fs = document.getElementById('filter-school').value;
+    const fStatus = document.getElementById('filter-status').value;
     
     let filtered = allStudents.filter(s => {
       const matchQ = !q || (s.full_name||'').toLowerCase().includes(q) || (s.national_id||'').includes(q) || (s.nickname||'').toLowerCase().includes(q);
       const matchC = !fc || s.class_room===fc;
       const matchS = !fs || s.school===fs;
-      return matchQ && matchC && matchS;
+      
+      // กรองสถานะวัคซีนตามที่ AI วิเคราะห์
+      const analysis = analyzeVaccines(s);
+      let matchStatus = true;
+      if (fStatus === 'missing') matchStatus = analysis.missing.length > 0;
+      if (fStatus === 'complete') matchStatus = analysis.missing.length === 0 && !analysis.noDob;
+
+      return matchQ && matchC && matchS && matchStatus;
     });
     
     const container = document.getElementById('student-list'), empty = document.getElementById('list-empty');
@@ -792,30 +949,45 @@
         el=document.createElement('button'); 
         el.type='button'; 
         el.dataset.sid=id; 
-        el.className='card-hover text-left rounded-xl p-4 border border-blue-200 transition-all cursor-pointer w-full shadow-md shadow-gray-400/50 bg-blue-50'; 
+        el.className='card-hover text-left rounded-xl p-4 border border-blue-200 transition-all cursor-pointer w-full shadow-md shadow-gray-400/50 bg-blue-50 flex flex-col justify-between'; 
         el.addEventListener('click',()=>window.openModal(s.__backendId)); 
         container.appendChild(el); 
       }
       
-      const age=s.date_of_birth?calcAge(s.date_of_birth):'-', vaxCount=vaccineFields.filter(v=>s[v.key]).length;
+      const age=s.date_of_birth?calcAge(s.date_of_birth):'-';
+      const analysis = analyzeVaccines(s);
+      
+      // ป้ายสถานะวัคซีน
+      let statusBadge = '';
+      if (analysis.noDob) {
+        statusBadge = `<span class="text-slate-500 bg-slate-200 px-2 py-0.5 rounded border border-slate-300 font-bold text-[10px]">ไม่ระบุวันเกิด</span>`;
+      } else if (analysis.missing.length > 0) {
+        statusBadge = `<span class="text-rose-700 bg-rose-100 px-2 py-0.5 rounded border border-rose-300 flex items-center gap-1 font-bold text-[10px]"><i data-lucide="alert-circle" style="width:12px;height:12px;"></i> ขาด ${analysis.missing.length} เข็ม</span>`;
+      } else {
+        statusBadge = `<span class="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1 font-bold text-[10px]"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> ครบตามวัย</span>`;
+      }
       
       const avatarHtml = s.profile_image 
         ? `<img src="${s.profile_image}" class="w-full h-full object-cover">` 
         : `<div class="w-full h-full flex items-center justify-center text-xl font-black text-white bg-blue-500">${(s.full_name||'?')[0]}</div>`;
         
       el.innerHTML=`
-        <div class="flex items-center gap-4">
-          <div style="width:48px;height:48px;border-radius:14px;flex-shrink:0;overflow:hidden;border:2px solid #000;box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            ${avatarHtml}
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="font-black text-sm text-black truncate">${esc(s.full_name||'-')}</div>
-            <div class="text-[11px] text-black font-bold mt-0.5">${s.nickname?'('+esc(s.nickname)+') ':''}${s.school?esc(s.school)+' ':''}${s.class_room||''}</div>
+        <div>
+          <div class="flex items-center gap-4">
+            <div style="width:48px;height:48px;border-radius:14px;flex-shrink:0;overflow:hidden;border:2px solid #000;box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              ${avatarHtml}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-black text-sm text-black truncate">${esc(s.full_name||'-')}</div>
+              <div class="text-[11px] text-black font-bold mt-0.5">${s.nickname?'('+esc(s.nickname)+') ':''}${s.school?esc(s.school)+' ':''}${s.class_room||''}</div>
+            </div>
           </div>
         </div>
-        <div class="flex gap-4 mt-4 text-xs font-bold text-black bg-white rounded-lg p-2 border border-blue-200 shadow-sm">
-          <span class="flex items-center gap-1"><i data-lucide="calendar" style="width:14px;height:14px;color:#000;"></i> อายุ ${age} ปี</span>
-          <span class="flex items-center gap-1"><i data-lucide="shield-check" style="width:14px;height:14px;color:var(--emerald);"></i> วัคซีน ${vaxCount}/${vaccineFields.length}</span>
+        <div class="flex items-center justify-between mt-4">
+          <div class="text-xs font-bold text-black flex items-center gap-1 bg-white px-2 py-1 rounded shadow-sm border border-blue-100">
+            <i data-lucide="calendar" style="width:14px;height:14px;color:#2563eb;"></i> อายุ ${age} ปี
+          </div>
+          ${statusBadge}
         </div>`;
       
       lucide.createIcons({root: el});
@@ -841,6 +1013,7 @@
   document.getElementById('search-input').addEventListener('input', renderList);
   document.getElementById('filter-class').addEventListener('change', renderList);
   document.getElementById('filter-school').addEventListener('change', renderList);
+  document.getElementById('filter-status').addEventListener('change', renderList);
   document.getElementById('dash-filter-school').addEventListener('change', renderDashboard);
   document.getElementById('dash-filter-class').addEventListener('change', renderDashboard);
 
@@ -904,6 +1077,49 @@
         ? `<img src="${s.profile_image}" class="w-full h-full object-cover">` 
         : `<div class="w-full h-full flex items-center justify-center text-4xl font-black text-white bg-blue-500">${(s.full_name||'?')[0]}</div>`;
     
+    // สร้างส่วนแสดงผลการวิเคราะห์วัคซีน AI
+    const analysis = analyzeVaccines(s);
+    let analysisHtml = '';
+    
+    if (!analysis.noDob) {
+      let missingHtml = analysis.missing.length > 0 
+        ? analysis.missing.map(m => `<li>${m.label} <span class="text-rose-600 ml-1 font-bold">(เลยกำหนด)</span></li>`).join('')
+        : `<li class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check-circle" style="width:16px;height:16px;"></i> ได้รับครบถ้วนตามช่วงวัยปัจจุบัน</li>`;
+        
+      let upcomingHtml = analysis.upcoming.length > 0
+        ? analysis.upcoming.map(u => `<li>${u.label} <span class="text-amber-700 ml-1 text-xs block mt-0.5">คาดว่า ${formatDate(u.estDate)} <span class="bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">(${u.relativeStr})</span></span></li>`).join('')
+        : `<li class="text-slate-600 font-bold flex items-center gap-1"><i data-lucide="info" style="width:16px;height:16px;"></i> ไม่มีวัคซีนหลักตามเกณฑ์ในอนาคตแล้ว</li>`;
+
+      analysisHtml = `
+        <div class="bg-slate-50 p-5 rounded-2xl border-2 border-black shadow-md mt-6">
+          <h4 class="font-black text-lg text-black mb-4 flex items-center gap-2">
+             <div class="bg-blue-600 text-white p-1.5 rounded-lg"><i data-lucide="activity" style="width:20px;height:20px;"></i></div> 
+             การประเมินวัคซีนตามเกณฑ์อายุ
+          </h4>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="bg-white border-2 ${analysis.missing.length > 0 ? 'border-rose-400 shadow-rose-200' : 'border-emerald-400 shadow-emerald-200'} p-4 rounded-xl shadow-md">
+              <div class="font-black ${analysis.missing.length > 0 ? 'text-rose-700' : 'text-emerald-700'} mb-3 border-b-2 border-slate-100 pb-2 flex items-center gap-1.5 text-base">
+                ${analysis.missing.length > 0 ? `<i data-lucide="alert-triangle" style="width:18px;height:18px;"></i> 🚨 ขาดวัคซีนที่เลยกำหนด (${analysis.missing.length} เข็ม)` : `<i data-lucide="shield-check" style="width:18px;height:18px;"></i> สถานะปัจจุบัน`}
+              </div>
+              <ul class="text-sm list-disc pl-5 space-y-2 font-bold ${analysis.missing.length > 0 ? 'text-rose-600' : 'text-emerald-600'}">
+                ${missingHtml}
+              </ul>
+            </div>
+            <div class="bg-white border-2 border-amber-300 p-4 rounded-xl shadow-md shadow-amber-100">
+              <div class="font-black text-amber-700 mb-3 border-b-2 border-slate-100 pb-2 flex items-center gap-1.5 text-base">
+                <i data-lucide="clock" style="width:18px;height:18px;"></i> ⏳ วัคซีนที่ต้องรับในอนาคต (${analysis.upcoming.length} เข็ม)
+              </div>
+              <ul class="text-sm list-disc pl-5 space-y-3 font-bold text-amber-900">
+                ${upcomingHtml}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      analysisHtml = `<div class="bg-slate-100 p-4 rounded-xl border-2 border-slate-300 text-slate-600 text-sm mt-6 font-bold flex items-center gap-2 shadow-sm"><i data-lucide="alert-circle" style="width:20px;height:20px;"></i> ⚠️ ไม่สามารถวิเคราะห์ได้ เนื่องจากไม่ได้ระบุวันเดือนปีเกิดในระบบ</div>`;
+    }
+
     const vaxTableHtml = `
       <div class="overflow-x-auto border-2 border-black rounded-xl mt-3 shadow-md bg-white">
         <table class="w-full border-collapse vax-table min-w-[600px]">
@@ -986,8 +1202,11 @@
         </div>
       </div>
 
-      <hr style="border-color:#94a3b8; margin-top:1.5rem; margin-bottom:1.5rem;">
-      <h4 class="font-black text-lg text-blue-700 flex items-center gap-2"><i data-lucide="shield-check" style="width:20px;height:20px;"></i> ประวัติการได้รับวัคซีน</h4>
+      <!-- ส่วนการวิเคราะห์ AI -->
+      ${analysisHtml}
+
+      <hr style="border-color:#94a3b8; margin-top:2rem; margin-bottom:1.5rem;">
+      <h4 class="font-black text-lg text-blue-700 flex items-center gap-2"><i data-lucide="shield-check" style="width:20px;height:20px;"></i> ประวัติการได้รับวัคซีนโดยละเอียด</h4>
       
       ${vaxTableHtml}
 
@@ -1142,7 +1361,7 @@
   async function init(){
     lucide.createIcons();
     const r = await window.dataSdk.init(handler);
-    if(r.isOk){ /* sdkReady = true; ไม่จำเป็นแล้วเพราะตรวจจาก handler ได้ */ } 
+    if(r.isOk){ /* Ready */ } 
     else {
       showError('ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณารีเฟรชหน้า');
       document.getElementById('student-form').style.pointerEvents='none';
