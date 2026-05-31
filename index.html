@@ -74,7 +74,7 @@
         setTimeout(() => handler.onDataChanged(this._data), 100);
       },
       _mockCreate: async function(data) {
-        data.__backendId = Date.now().toString();
+        data.__backendId = Date.now().toString() + Math.floor(Math.random()*1000);
         this._data.push(data);
         this._saveMock();
         return { isOk: true };
@@ -160,7 +160,7 @@
         </button>
       </form>
       <div class="mt-6 text-center text-xs font-bold text-slate-400">
-        โรงพยาบาลแม่อาย (v1.4.3)
+        โรงพยาบาลแม่อาย (v1.4.4)
       </div>
     </div>
   </div>
@@ -173,7 +173,7 @@
           <i data-lucide="shield-plus"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.3</span></h1>
+          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.4</span></h1>
           <p class="text-xs font-bold text-black">อนามัยโรงเรียน รพ.แม่อาย</p>
         </div>
       </div>
@@ -267,9 +267,13 @@
         </div>
       </div>
       
+      <!-- อัตราการได้รับวัคซีนแบบจัด Layout ใหม่ -->
       <div class="rounded-xl p-5 border border-blue-200 shadow-md shadow-gray-400/50 mt-4 bg-blue-50">
-        <h3 class="font-bold text-black mb-4">อัตราการได้รับวัคซีนแต่ละประเภท</h3>
-        <div id="vaccine-chart" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+        <h3 class="font-bold text-black mb-4 flex items-center gap-2"><i data-lucide="activity" style="width:20px;height:20px;" class="text-emerald-600"></i> อัตราการได้รับวัคซีนแต่ละประเภท</h3>
+        <div class="bg-white rounded-xl border border-blue-200 shadow-sm p-4">
+           <!-- แสดงข้อมูลแบบคอลัมน์รายการที่สะอาดตา -->
+           <div id="vaccine-chart" class="grid lg:grid-cols-2 gap-x-8 gap-y-1"></div>
+        </div>
       </div>
       
       <div id="dash-empty" class="text-center py-16 hidden">
@@ -281,6 +285,7 @@
     <!-- LIST -->
     <section id="view-list" class="hidden fade-in">
       <div class="flex flex-col sm:flex-row gap-3 mb-5 bg-white p-4 rounded-xl border border-blue-200 shadow-sm flex-wrap items-center">
+        <!-- แถวบน: ค้นหา & ตัวกรอง -->
         <div class="relative flex-1 min-w-[200px] w-full sm:w-auto">
           <i data-lucide="search" style="width:18px;height:18px;color:#000;position:absolute;left:12px;top:50%;transform:translateY(-50%);"></i> 
           <input id="search-input" type="text" placeholder="ค้นหาชื่อ, สกุล, รหัสประชาชน..." class="w-full pl-10 shadow-sm" style="font-size:14px;">
@@ -299,8 +304,17 @@
         
         <div class="w-full h-px bg-blue-100 my-1 sm:hidden"></div>
         
-        <!-- กลุ่มปุ่ม ส่งออก / วางแผน -->
+        <!-- แถวล่าง: ปุ่มนำเข้า / ส่งออก / วางแผน -->
         <div class="flex gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+          <button type="button" id="btn-download-template" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-colors shadow-sm bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap">
+            <i data-lucide="file-down" style="width:16px;height:16px;"></i><span>โหลดไฟล์ต้นแบบ</span>
+          </button>
+          
+          <label class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-colors shadow-sm bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap cursor-pointer">
+            <i data-lucide="upload-cloud" style="width:16px;height:16px;"></i><span>นำเข้าข้อมูล (Excel)</span>
+            <input type="file" id="file-import-excel" accept=".xlsx, .xls" class="hidden">
+          </label>
+
           <button type="button" id="export-excel-filtered-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-colors shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white whitespace-nowrap">
             <i data-lucide="file-spreadsheet" style="width:16px;height:16px;"></i><span>ส่งออก (ตามตัวกรอง)</span>
           </button>
@@ -607,127 +621,124 @@
     <!-- KNOWLEDGE BASE -->
     <section id="view-knowledge" class="hidden fade-in">
       <div class="max-w-5xl mx-auto">
-        <h2 class="font-black text-3xl mb-6 text-black border-b-4 border-blue-500 pb-2 inline-block">คลังความรู้และคู่มือวัคซีน ปี 2569</h2>
+        <h2 class="font-black text-2xl mb-6 text-black">คลังความรู้และตารางวัคซีน ปี 2569</h2>
 
-        <!-- ส่วนที่ 1: ข้อควรรู้และข้อควรระวัง -->
-        <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-8 shadow-sm">
-          <h3 class="font-black text-xl text-blue-800 mb-5 flex items-center gap-2">
-            <i data-lucide="alert-triangle" style="width:24px;height:24px;" class="text-amber-500"></i> ข้อควรรู้และข้อควรระวังในการรับวัคซีน
-          </h3>
-          <div class="grid md:grid-cols-2 gap-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-              <h4 class="font-black text-rose-600 mb-3 border-b-2 border-rose-100 pb-2 flex items-center gap-2">
-                <i data-lucide="info" style="width:18px;height:18px;"></i> ก่อนรับวัคซีน
-              </h4>
-              <ul class="list-disc pl-5 text-sm text-black font-bold space-y-2.5">
-                <li>หากมีอาการป่วยเล็กน้อย เช่น น้ำมูกไหล ไอ (แต่ไม่มีไข้) <span class="text-emerald-600">สามารถรับวัคซีนได้</span></li>
-                <li>หากมี <span class="text-rose-600">ไข้สูง</span> หรือเจ็บป่วยเฉียบพลัน ควรเลื่อนการฉีดออกไปก่อนจนกว่าจะหายดี</li>
-                <li>แจ้งเจ้าหน้าที่ทุกครั้ง หากเคยมีประวัติแพ้วัคซีนรุนแรง แพ้ยา แพ้อาหาร (เช่น ไข่ ยีสต์ เจลาติน) หรือมีโรคประจำตัว/ภาวะภูมิคุ้มกันบกพร่อง</li>
-                <li>นำ <span class="text-blue-600 underline">สมุดบันทึกสุขภาพ (สมุดสีชมพู)</span> มาด้วยทุกครั้ง เพื่อให้เจ้าหน้าที่ตรวจสอบประวัติเดิม</li>
-              </ul>
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1 space-y-6">
+            <div class="rounded-xl p-5 border border-blue-200 bg-white shadow-md shadow-gray-400/50">
+              <h3 class="font-bold text-lg text-blue-700 mb-3 flex items-center gap-2"><i data-lucide="book" style="width:20px;height:20px;"></i> ตัวอย่างสมุดสีชมพู</h3>
+              <p class="text-sm font-bold text-slate-600 mb-4">แนวทางการลงบันทึกประวัติการได้รับวัคซีนตามแผนงานสร้างเสริมภูมิคุ้มกันโรคของประเทศไทย</p>
+              <div class="rounded-lg overflow-hidden border-2 border-black">
+                 <img src="240569%202.jpg" alt="ตัวอย่างการบันทึกวัคซีน" onerror="this.src='https://placehold.co/300x400/ffffff/2563eb?text=Pink+Book+Example'" class="w-full h-auto object-cover">
+              </div>
+              <p class="text-xs text-rose-600 mt-3 font-bold">* รูปตัวอย่างการลงบันทึกประวัติ</p>
             </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-              <h4 class="font-black text-emerald-600 mb-3 border-b-2 border-emerald-100 pb-2 flex items-center gap-2">
-                <i data-lucide="check-circle" style="width:18px;height:18px;"></i> หลังรับวัคซีน
-              </h4>
-              <ul class="list-disc pl-5 text-sm text-black font-bold space-y-2.5">
-                <li>นั่งพักสังเกตอาการอย่างน้อย <span class="text-rose-600">30 นาที</span> ที่สถานพยาบาล และสังเกตอาการต่อที่บ้าน 7 วัน</li>
-                <li>อาจมีอาการปวด บวม แดง บริเวณที่ฉีด ให้ <span class="text-blue-600">ประคบเย็น</span> (ห้ามคลึงหรือนวดบริเวณที่ฉีด)</li>
-                <li>หากมีไข้ สามารถรับประทานยาลดไข้ (พาราเซตามอล) ตามน้ำหนักตัวได้ และหมั่นเช็ดตัวด้วยน้ำอุ่น</li>
-                <li>หากมีอาการแพ้รุนแรง (เช่น ผื่นลมพิษ หายใจติดขัด หน้าบวม ปากบวม) ควรรีบพบแพทย์ทันที หรือโทร <span class="text-rose-600">1669</span></li>
-              </ul>
+
+            <div class="rounded-xl p-5 border border-blue-300 bg-blue-100 shadow-sm flex items-start gap-3">
+              <i data-lucide="info" class="text-blue-700 mt-1" style="width:24px;height:24px;"></i>
+              <div>
+                 <h3 class="font-black mb-1 text-black">อ้างอิงข้อมูลวิชาการ</h3>
+                 <p class="text-xs font-bold text-slate-700">อ้างอิงจากประกาศกรมควบคุมโรค: คำแนะนำการสร้างเสริมภูมิคุ้มกันโรคตลอดช่วงชีวิต สำหรับประชาชน ปี 2569 และตารางวัคซีน สมาคมโรคติดเชื้อในเด็กแห่งประเทศไทย (PIDST)</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- ส่วนที่ 2: รายละเอียดวัคซีน (วิธีให้ ปริมาณ ระยะห่าง) -->
-        <div class="bg-white border-2 border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
-          <h3 class="font-black text-xl text-black mb-5 flex items-center gap-2">
-            <i data-lucide="syringe" style="width:24px;height:24px;" class="text-blue-600"></i> ข้อมูลการให้วัคซีนแต่ละชนิด (วิธีให้, ปริมาณ, ระยะห่าง)
-          </h3>
-          <div class="overflow-x-auto rounded-lg border border-slate-300">
-            <table class="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-800 text-white font-black">
-                  <th class="p-3 border-b border-slate-600 w-1/4">ชนิดวัคซีน</th>
-                  <th class="p-3 border-b border-slate-600 w-1/4">ปริมาณ / วิธีให้</th>
-                  <th class="p-3 border-b border-slate-600 w-1/2">จำนวนเข็ม และระยะห่าง (โดยสังเขป)</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-200 text-black font-bold">
-                <tr class="hover:bg-slate-50">
-                  <td class="p-3 border-r border-slate-200">วัณโรค (BCG)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.1 มล. / ฉีดเข้าในชั้นผิวหนัง (ID) ไหล่ซ้าย</td>
-                  <td class="p-3">1 เข็ม (แรกเกิด)</td>
-                </tr>
-                <tr class="hover:bg-slate-50 bg-slate-50/50">
-                  <td class="p-3 border-r border-slate-200">ตับอักเสบบี (HB)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.5 มล. / ฉีดเข้ากล้ามเนื้อ (IM)</td>
-                  <td class="p-3">3-4 เข็ม (แรกเกิด, 1 ด.[ถ้าแม่เป็นพาหะ], 2, 4, 6 ด. รวมใน DTP-HB-Hib)</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="p-3 border-r border-slate-200">คอตีบ-บาดทะยัก-ไอกรน<br><span class="text-xs text-slate-500">(DTP / DTP-HB-Hib)</span></td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.5 มล. / ฉีดเข้ากล้ามเนื้อ (IM)</td>
-                  <td class="p-3">5 เข็ม (2, 4, 6 เดือน และกระตุ้นที่ 1.5 ปี, 4-6 ปี)<br><span class="text-xs text-rose-600">*หลังจากนั้นฉีด dT กระตุ้นทุก 10 ปี</span></td>
-                </tr>
-                <tr class="hover:bg-slate-50 bg-slate-50/50">
-                  <td class="p-3 border-r border-slate-200">โปลิโอ (OPV / IPV)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">OPV: หยอดปาก 2 หยด<br>IPV: 0.5 มล. ฉีดเข้ากล้ามเนื้อ/ใต้ผิวหนัง</td>
-                  <td class="p-3">IPV (ฉีด): 2 เข็ม (อายุ 2 และ 4 เดือน)<br>OPV (หยอด): 3 ครั้ง (อายุ 6 เดือน, 1.5 ปี และ 4 ปี)</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="p-3 border-r border-slate-200">โรต้า (Rota)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">หยอดปาก (ปริมาณตามยี่ห้อ)</td>
-                  <td class="p-3">2 หรือ 3 ครั้ง (อายุ 2, 4, [6] เดือน) ห่างกันอย่างน้อย 4 สัปดาห์<br><span class="text-xs text-slate-500">*ครั้งแรกเริ่มได้ช่วงอายุ 6-15 สัปดาห์</span></td>
-                </tr>
-                <tr class="hover:bg-slate-50 bg-slate-50/50">
-                  <td class="p-3 border-r border-slate-200">หัด-หัดเยอรมัน-คางทูม (MMR)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.5 มล. / ฉีดเข้าใต้ผิวหนัง (SC)</td>
-                  <td class="p-3">2 เข็ม (อายุ 9-12 เดือน และกระตุ้นที่ 1.5 ปี)</td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="p-3 border-r border-slate-200">ไข้สมองอักเสบเจอี (LAJE)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.5 มล. / ฉีดเข้าใต้ผิวหนัง (SC)</td>
-                  <td class="p-3">เชื้อเป็น (Live JE): 2 เข็ม (อายุ 1 ปี และกระตุ้นที่ 2.5 ปี)</td>
-                </tr>
-                <tr class="hover:bg-slate-50 bg-slate-50/50">
-                  <td class="p-3 border-r border-slate-200">เอชพีวี (HPV)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.5 มล. / ฉีดเข้ากล้ามเนื้อ (IM)</td>
-                  <td class="p-3">อายุ < 15 ปี: ฉีด 2 เข็ม ห่างกัน 6-12 เดือน<br><span class="text-xs text-slate-500">*ตามแผนฯ ให้ในเด็กหญิง ป.5 (อายุ 11-12 ปี)</span></td>
-                </tr>
-                <tr class="hover:bg-slate-50">
-                  <td class="p-3 border-r border-slate-200">ไข้หวัดใหญ่ (Flu)</td>
-                  <td class="p-3 border-r border-slate-200 text-blue-700">0.5 มล. / ฉีดเข้ากล้ามเนื้อ (IM)<br><span class="text-xs text-slate-500">*เด็ก < 3 ปี ให้ 0.25 หรือ 0.5 มล. (ตามยี่ห้อ)</span></td>
-                  <td class="p-3">ฉีดกระตุ้นปีละ 1 เข็ม (เด็กอายุ < 9 ปี หากฉีดปีแรกต้องให้ 2 เข็ม ห่างกัน 4 สัปดาห์)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ส่วนที่ 3: แนบไฟล์ PDF (ดาวน์โหลด) -->
-        <div class="bg-blue-600 rounded-2xl p-6 mb-8 shadow-md shadow-blue-500/30 text-white relative overflow-hidden">
-          <div class="relative z-10">
-            <h3 class="font-black text-2xl mb-2 flex items-center gap-2">
-              <i data-lucide="download-cloud" style="width:28px;height:28px;"></i> ดาวน์โหลดคู่มือและตารางวัคซีนฉบับเต็ม (PDF)
-            </h3>
-            <p class="text-blue-100 text-sm font-bold mb-5">สามารถคลิกที่ปุ่มด้านล่างเพื่อเปิดดู หรือดาวน์โหลดไฟล์ PDF เอกสารอ้างอิงปี 2569</p>
-            <div class="grid sm:grid-cols-2 gap-4">
-              <!-- แนบไฟล์: การสร้างเสริมภูมิคุ้มกัน ตลอดชีวิต 2569.pdf -->
-              <a href="การสร้างเสริมภูมิคุ้มกัน ตลอดชีวิต 2569.pdf" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white text-blue-800 hover:bg-blue-50 p-4 rounded-xl transition-transform transform hover:-translate-y-1 shadow-lg group border-2 border-transparent hover:border-blue-300">
-                <div class="bg-rose-100 p-3 rounded-lg group-hover:bg-rose-200 transition-colors">
-                  <i data-lucide="file-text" class="w-8 h-8 text-rose-600"></i>
+          <div class="lg:col-span-2">
+            <div class="rounded-xl border border-blue-200 bg-white shadow-md shadow-gray-400/50 overflow-hidden">
+              <div class="bg-blue-600 p-4 border-b border-blue-700 flex items-center gap-2">
+                 <i data-lucide="calendar-clock" class="text-white" style="width:24px;height:24px;"></i>
+                 <h3 class="font-black text-white text-lg">ตารางการให้วัคซีนในเด็กไทยและวัยรุ่น ปี 2569</h3>
+              </div>
+              <div class="p-0 overflow-x-auto">
+                 <table class="w-full text-sm text-left border-collapse">
+                    <thead>
+                       <tr class="bg-blue-100 text-black font-black border-b-2 border-blue-200">
+                          <th class="p-3 whitespace-nowrap border-r border-blue-200">อายุที่รับวัคซีน</th>
+                          <th class="p-3">ชนิดวัคซีนที่ต้องได้รับตามแผนงานฯ</th>
+                       </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-100">
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">แรกเกิด</td>
+                          <td class="p-3 font-bold text-slate-700">วัณโรค <span class="text-blue-600">(BCG)</span>, ตับอักเสบบี <span class="text-blue-600">(HB1)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">1 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">ตับอักเสบบี <span class="text-blue-600">(HB2)</span> <span class="text-xs text-rose-500 font-bold ml-1">*เฉพาะกรณีมารดาเป็นพาหะ</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">2 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ <span class="text-blue-600">(DTwP-HB-Hib-1)</span>, โปลิโอฉีด <span class="text-blue-600">(IPV1)</span>, โรต้า <span class="text-blue-600">(Rota1)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">4 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ <span class="text-blue-600">(DTwP-HB-Hib-2)</span>, โปลิโอฉีด <span class="text-blue-600">(IPV2)</span>, โรต้า <span class="text-blue-600">(Rota2)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">6 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ <span class="text-blue-600">(DTwP-HB-Hib-3)</span>, โปลิโอกิน <span class="text-blue-600">(OPV1)</span>, โรต้า <span class="text-blue-600">(Rota3 *กรณีวัคซีนบางชนิด)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">9-12 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">หัด-คางทูม-หัดเยอรมัน <span class="text-blue-600">(MMR1)</span>, ไข้สมองอักเสบเจอี <span class="text-blue-600">(JE1)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">18 เดือน</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน กระตุ้น <span class="text-blue-600">(DTwP)</span>, โปลิโอกิน กระตุ้น <span class="text-blue-600">(OPV)</span>, หัดฯ <span class="text-blue-600">(MMR2)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">2 - 2.5 ปี</td>
+                          <td class="p-3 font-bold text-slate-700">ไข้สมองอักเสบเจอี <span class="text-blue-600">(JE2)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">4-6 ปี</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก-ไอกรน กระตุ้น 2 <span class="text-blue-600">(DTwP)</span>, โปลิโอกิน กระตุ้น 2 <span class="text-blue-600">(OPV)</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-amber-50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">11-12 ปี (ชั้น ป.5)</td>
+                          <td class="p-3 font-bold text-slate-700">ฉีดวัคซีนป้องกันเอชพีวี <span class="text-blue-600">(HPV)</span> <span class="text-xs text-rose-600 font-bold ml-1">*เฉพาะนักเรียนหญิง ชั้น ป.5</span></td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-emerald-50">
+                          <td class="p-3 font-bold text-black whitespace-nowrap border-r border-blue-100">12 ปี (ชั้น ป.6)</td>
+                          <td class="p-3 font-bold text-slate-700">คอตีบ-บาดทะยัก <span class="text-blue-600">(dT)</span> <span class="text-xs text-emerald-700 font-bold ml-1">*นักเรียนชั้น ป.6 ทุกคน</span></td>
+                       </tr>
+                    </tbody>
+                 </table>
+              </div>
+              
+              <div class="p-5 bg-white border-t border-blue-200">
+                <h4 class="font-black text-black mb-3 flex items-center gap-2"><i data-lucide="syringe" style="width:20px;height:20px;" class="text-emerald-600"></i> วัคซีนทางเลือกและวัคซีนแนะนำเพิ่มเติม</h4>
+                <div class="grid sm:grid-cols-2 gap-4">
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">ไข้หวัดใหญ่ (Influenza)</strong>
+                      <span class="text-sm font-bold text-slate-600">แนะนำให้ฉีดปีละ 1 เข็ม (เด็กอายุต่ำกว่า 9 ปี รับครั้งแรกให้ 2 เข็ม ห่างกัน 1 เดือน)</span>
+                   </div>
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">ไข้เลือดออก (Dengue)</strong>
+                      <span class="text-sm font-bold text-slate-600">อายุ 4 ปีขึ้นไป ฉีด 2 เข็ม ห่างกัน 3 เดือน (พิจารณาฉีดในกลุ่มเสี่ยง)</span>
+                   </div>
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">อีสุกอีใส (VZV)</strong>
+                      <span class="text-sm font-bold text-slate-600">เข็มแรกอายุ 12-18 เดือน, เข็มที่ 2 อายุ 4-6 ปี</span>
+                   </div>
+                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <strong class="text-black block mb-1">อาร์เอสวี (RSV)</strong>
+                      <span class="text-sm font-bold text-slate-600">แนะนำฉีดในหญิงตั้งครรภ์ หรือ ภูมิคุ้มกันสำเร็จรูป (Nirsevimab) ในเด็กอายุน้อยกว่า 8 เดือน (เฉพาะฤดูกาลระบาด)</span>
+                   </div>
                 </div>
+              </div>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 gap-4 mt-6">
+              <a href="การสร้างเสริมภูมิคุ้มกัน ตลอดชีวิต 2569.pdf" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white text-blue-800 hover:bg-blue-50 p-4 rounded-xl transition-transform transform hover:-translate-y-1 shadow-md border border-blue-200 group">
+                <div class="bg-rose-100 p-3 rounded-lg group-hover:bg-rose-200 transition-colors"><i data-lucide="file-text" class="w-8 h-8 text-rose-600"></i></div>
                 <div>
                   <h4 class="font-black text-sm leading-tight mb-1">การสร้างเสริมภูมิคุ้มกัน ตลอดชีวิต 2569.pdf</h4>
                   <p class="text-[11px] font-bold text-slate-500 bg-slate-100 inline-block px-2 py-0.5 rounded">คลิกเพื่อเปิดไฟล์</p>
                 </div>
               </a>
-              <!-- แนบไฟล์: ตารางวัคซีนเด็ก 2569.pdf -->
-              <a href="ตารางวัคซีนเด็ก 2569.pdf" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white text-blue-800 hover:bg-blue-50 p-4 rounded-xl transition-transform transform hover:-translate-y-1 shadow-lg group border-2 border-transparent hover:border-blue-300">
-                <div class="bg-rose-100 p-3 rounded-lg group-hover:bg-rose-200 transition-colors">
-                  <i data-lucide="file-text" class="w-8 h-8 text-rose-600"></i>
-                </div>
+              <a href="ตารางวัคซีนเด็ก 2569.pdf" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white text-blue-800 hover:bg-blue-50 p-4 rounded-xl transition-transform transform hover:-translate-y-1 shadow-md border border-blue-200 group">
+                <div class="bg-rose-100 p-3 rounded-lg group-hover:bg-rose-200 transition-colors"><i data-lucide="file-text" class="w-8 h-8 text-rose-600"></i></div>
                 <div>
                   <h4 class="font-black text-sm leading-tight mb-1">ตารางวัคซีนเด็ก 2569.pdf</h4>
                   <p class="text-[11px] font-bold text-slate-500 bg-slate-100 inline-block px-2 py-0.5 rounded">คลิกเพื่อเปิดไฟล์</p>
@@ -735,30 +746,7 @@
               </a>
             </div>
           </div>
-          <!-- ลายน้ำพื้นหลัง -->
-          <i data-lucide="book-open" class="absolute -bottom-10 -right-10 w-64 h-64 text-white opacity-10 z-0 pointer-events-none"></i>
         </div>
-
-        <!-- ส่วนที่ 4: ตัวอย่างสมุดสีชมพู (คงของเดิมไว้) -->
-        <div class="rounded-xl p-6 border-2 border-slate-200 bg-white shadow-sm flex flex-col md:flex-row gap-6 items-start">
-          <div class="flex-1">
-            <h3 class="font-black text-xl text-blue-700 mb-3 flex items-center gap-2"><i data-lucide="book" style="width:24px;height:24px;"></i> ตัวอย่างการลงบันทึกในสมุดสีชมพู</h3>
-            <p class="text-sm font-bold text-slate-600 mb-4 leading-relaxed">แนวทางการลงบันทึกประวัติการได้รับวัคซีนตามแผนงานสร้างเสริมภูมิคุ้มกันโรคของประเทศไทย ในสมุดบันทึกสุขภาพแม่และเด็ก</p>
-            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-               <p class="text-xs font-bold text-blue-800 flex items-start gap-2">
-                 <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
-                 ข้อควรระวัง: ควรกรอก วัน/เดือน/ปี ที่ได้รับวัคซีนให้ชัดเจน และลงลายมือชื่อผู้ฉีด/สถานที่ฉีดทุกครั้ง เพื่อประโยชน์ในการติดตามประวัติ
-               </p>
-            </div>
-          </div>
-          <div class="w-full md:w-1/2 lg:w-1/3 flex-shrink-0">
-            <div class="rounded-lg overflow-hidden border-4 border-slate-800 shadow-md">
-               <img src="240569%202.jpg" alt="ตัวอย่างการบันทึกวัคซีนในสมุดสีชมพู" onerror="this.src='https://placehold.co/400x500/f8fafc/334155?text=Pink+Book+Sample+Image'" class="w-full h-auto object-cover hover:scale-105 transition-transform duration-500 cursor-zoom-in">
-            </div>
-            <p class="text-xs text-center text-slate-500 mt-2 font-bold">* ภาพตัวอย่างการลงประวัติในสมุดสีชมพู</p>
-          </div>
-        </div>
-
       </div>
     </section>
   </main>
@@ -830,13 +818,26 @@
       </div>
     </div>
   </div>
+
+  <!-- Import Progress Modal -->
+  <div id="import-progress-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+     <div class="bg-white rounded-2xl w-full max-w-sm border-2 border-blue-200 shadow-2xl p-6 text-center">
+        <i data-lucide="loader-2" class="animate-spin text-blue-600 mx-auto mb-4" style="width:48px;height:48px;"></i>
+        <h3 class="font-black text-lg text-slate-800 mb-2">กำลังนำเข้าข้อมูล...</h3>
+        <p class="text-sm font-bold text-slate-500 mb-4" id="import-status-text">0 / 0 รายการ</p>
+        <div class="w-full bg-slate-200 rounded-full h-3 mb-2 shadow-inner overflow-hidden">
+           <div id="import-progress-bar" class="h-3 rounded-full bg-blue-600 transition-all" style="width: 0%"></div>
+        </div>
+        <p class="text-[10px] text-rose-500 font-bold mt-2">โปรดอย่าปิดหน้าต่างนี้จนกว่าจะเสร็จสิ้น</p>
+     </div>
+  </div>
   
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
 (function(){
   let allStudents = [];
-  let currentFilteredStudents = []; // เก็บรายชื่อที่ถูกกรองล่าสุด
+  let currentFilteredStudents = []; 
   let editingRecord = null;
   let deleteConfirmationPending = null;
 
@@ -931,6 +932,28 @@
     'f-vflu2':'vaccine_flu_2_date', 'f-vflu2-p':'vaccine_flu_2_provider', 'f-vflu2-l':'vaccine_flu_2_location'
   };
 
+  // แมปปิ้งสำหรับการนำเข้าข้อมูล Excel
+  const importMap = {
+    'ชื่อ-นามสกุล': 'full_name',
+    'ชื่อเล่น': 'nickname',
+    'เลขบัตรประชาชน': 'national_id',
+    'วันเกิด (YYYY-MM-DD)': 'date_of_birth',
+    'เพศ (ชาย/หญิง)': 'gender',
+    'หมู่เลือด': 'blood_type',
+    'โรงเรียน': 'school',
+    'ระดับชั้น/ห้องเรียน': 'class_room',
+    'รหัสโรงพยาบาล (HN)': 'hn',
+    'น้ำหนัก (กก.)': 'weight',
+    'ส่วนสูง (ซม.)': 'height',
+    'บ้านเลขที่': 'addr_house_no',
+    'หมู่ที่': 'addr_moo',
+    'ตำบล': 'addr_tambon',
+    'อำเภอ': 'addr_amphoe',
+    'จังหวัด': 'addr_province',
+    'ชื่อผู้ปกครอง': 'guardian_name',
+    'เบอร์โทรผู้ปกครอง': 'guardian_phone'
+  };
+
   window.editStudent = editStudent;
   window.openModal = openModal;
 
@@ -988,29 +1011,27 @@
     const missing = [];
     const upcoming = [];
     const received = [];
-    const blocked = []; // รอเข็มก่อนหน้า
+    const blocked = []; 
 
     EPI_SCHEDULE.forEach(rule => {
-      if (rule.condition && !rule.condition(s)) return; // ข้ามถ้าไม่ตรงเงื่อนไข (เช่น เป็นผู้ชายไม่ต้องฉีด HPV)
+      if (rule.condition && !rule.condition(s)) return; 
 
       const receivedDateStr = s[rule.key + '_date'];
       
       if (receivedDateStr) {
         received.push({ ...rule, date: new Date(receivedDateStr) });
       } else {
-        // ยังไม่ได้ฉีด -> คำนวณวันเป้าหมาย
         let targetDate = addMonths(dob, rule.dueAge);
         let canCalculate = true;
 
         if (rule.dependsOn) {
           const prevVaccineStr = s[rule.dependsOn + '_date'];
           if (!prevVaccineStr) {
-            canCalculate = false; // ยังไม่ได้เข็มก่อนหน้า
+            canCalculate = false; 
           } else {
-            // วันที่เป้าหมายอิงจากเข็มก่อนหน้า + ระยะห่าง
             const dateByInterval = addMonths(new Date(prevVaccineStr), rule.intervalMonths);
             if (dateByInterval > targetDate) {
-              targetDate = dateByInterval; // เลื่อนวันเป้าหมายออกไปตามระยะห่างเข็ม
+              targetDate = dateByInterval; 
             }
           }
         }
@@ -1023,19 +1044,18 @@
             upcoming.push({ ...rule, targetDate });
           }
         } else {
-          // ต้องฉีดเข็มก่อนหน้าก่อน
           blocked.push(rule);
         }
       }
     });
 
-    // เรียงลำดับตามวันที่
     missing.sort((a,b) => a.targetDate - b.targetDate);
     upcoming.sort((a,b) => a.targetDate - b.targetDate);
 
     return { missing, upcoming, received, blocked, isComplete: missing.length === 0, noDob: false };
   }
 
+  // จัดการอัปโหลดและบีบอัดรูปภาพโปรไฟล์
   document.getElementById('f-image-file').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1091,10 +1111,17 @@
     });
 
     const total = d.length;
-    const male = d.filter(s => s.gender==='ชาย').length, female = d.filter(s => s.gender==='หญิง').length;
+    const male = d.filter(s => s.gender==='ชาย').length;
+    const female = d.filter(s => s.gender==='หญิง').length;
+    
+    // คำนวณเปอร์เซ็นต์
+    const malePct = total ? Math.round((male/total)*100) : 0;
+    const femalePct = total ? Math.round((female/total)*100) : 0;
+
     document.getElementById('dash-total').textContent = total;
-    document.getElementById('dash-male').textContent = male;
-    document.getElementById('dash-female').textContent = female;
+    document.getElementById('dash-male').innerHTML = `${male} <span class="text-sm font-bold text-slate-500">(${malePct}%)</span>`;
+    document.getElementById('dash-female').innerHTML = `${female} <span class="text-sm font-bold text-slate-500">(${femalePct}%)</span>`;
+    
     let fullVax = 0;
     d.forEach(s => { if(vaccineFields.every(v => s[v.key])) fullVax++; });
     document.getElementById('dash-vaccine').textContent = total ? Math.round(fullVax/total*100)+'%' : '0%';
@@ -1111,13 +1138,13 @@
     }
 
     const gc = document.getElementById('gender-chart'), maxG = Math.max(male,female,1);
-    gc.innerHTML = `<div class="flex flex-col items-center gap-2" style="flex:1;max-width:120px;"><div style="background:var(--accent);width:100%;border-radius:8px 8px 0 0;height:${Math.round(male/maxG*140)}px;min-height:4px;transition:height .5s;"></div><span class="text-xs font-bold text-black">ชาย (${male})</span></div><div class="flex flex-col items-center gap-2" style="flex:1;max-width:120px;"><div style="background:var(--rose);width:100%;border-radius:8px 8px 0 0;height:${Math.round(female/maxG*140)}px;min-height:4px;transition:height .5s;"></div><span class="text-xs font-bold text-black">หญิง (${female})</span></div>`;
+    gc.innerHTML = `<div class="flex flex-col items-center gap-2" style="flex:1;max-width:120px;"><div style="background:var(--accent);width:100%;border-radius:8px 8px 0 0;height:${Math.round(male/maxG*140)}px;min-height:4px;transition:height .5s;"></div><span class="text-xs font-bold text-black">ชาย (${malePct}%)</span></div><div class="flex flex-col items-center gap-2" style="flex:1;max-width:120px;"><div style="background:var(--rose);width:100%;border-radius:8px 8px 0 0;height:${Math.round(female/maxG*140)}px;min-height:4px;transition:height .5s;"></div><span class="text-xs font-bold text-black">หญิง (${femalePct}%)</span></div>`;
 
     const rooms = {}; d.forEach(s => { if(s.class_room) rooms[s.class_room]=(rooms[s.class_room]||0)+1; });
     const cc = document.getElementById('classroom-chart'), maxR = Math.max(...Object.values(rooms),1);
     cc.innerHTML = Object.entries(rooms).sort((a,b)=>a[0].localeCompare(b[0])).map(([r,c])=>`<div class="flex flex-col items-center gap-2" style="flex:1;min-width:40px;max-width:60px;"><div style="background:var(--emerald);width:100%;border-radius:6px 6px 0 0;height:${Math.round(c/maxR*140)}px;min-height:4px;transition:height .5s;"></div><span class="text-[11px] text-center font-bold text-black">${r}<br>${c}</span></div>`).join('');
 
-    // สร้างตารางข้อมูลนักเรียนแยกรายโรงเรียน
+    // สร้างตารางข้อมูลนักเรียนแยกรายโรงเรียน (พร้อมเปอร์เซ็นต์)
     const schoolStats = {};
     allStudents.forEach(s => {
       const sch = s.school || 'ไม่ระบุโรงเรียน';
@@ -1132,36 +1159,37 @@
       <thead><tr class="bg-blue-100 border-b border-blue-300">
         <th class="p-3 font-bold border-r border-blue-200">โรงเรียน</th>
         <th class="p-3 font-bold">ระดับชั้น (จำนวนคน)</th>
-        <th class="p-3 font-bold text-center w-24">รวมทั้งสิ้น</th>
+        <th class="p-3 font-bold text-center w-32">รวมทั้งสิ้น</th>
       </tr></thead><tbody class="divide-y divide-blue-100">`;
     
     Object.entries(schoolStats).sort((a,b) => b[1].total - a[1].total).forEach(([sch, data]) => {
+       const schPct = allStudents.length ? Math.round((data.total / allStudents.length) * 100) : 0;
        const clsStrings = Object.entries(data.classes).sort().map(([c, count]) => `<span class="inline-block bg-blue-50 border border-blue-200 rounded px-2 py-0.5 text-xs mr-1 mb-1">${c}: <strong class="text-blue-700">${count}</strong></span>`).join('');
        schHtml += `<tr>
          <td class="p-3 font-bold text-slate-800 border-r border-blue-100 align-top">${esc(sch)}</td>
          <td class="p-3 align-top">${clsStrings}</td>
-         <td class="p-3 text-center font-black text-blue-700 align-top">${data.total}</td>
+         <td class="p-3 text-center font-black text-blue-700 align-top">${data.total} <span class="text-xs text-slate-500 font-bold ml-1">(${schPct}%)</span></td>
        </tr>`;
     });
     if(Object.keys(schoolStats).length === 0) schHtml += `<tr><td colspan="3" class="p-4 text-center text-slate-500 font-medium">ยังไม่มีข้อมูล</td></tr>`;
     schHtml += `</tbody></table>`;
     document.getElementById('school-class-table-container').innerHTML = schHtml;
 
+    // สร้างตารางวัคซีนแบบ List View ที่ดูสบายตา
     const vc = document.getElementById('vaccine-chart');
     vc.innerHTML = vaccineFields.map(v => {
       const count = d.filter(s=>s[v.key]).length, pct = total?Math.round(count/total*100):0;
-      const color = pct>=80?'var(--emerald)':pct>=50?'var(--amber)':'var(--rose)';
-      return `<div class="rounded-xl p-4 bg-white border border-blue-200 shadow-sm">
-        <div class="flex justify-between items-center mb-3">
-          <div class="text-xs text-black font-black truncate pr-2">${v.label}</div>
-          <div class="text-[11px] font-bold text-black whitespace-nowrap bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 shadow-sm">${count}/${total} คน</div>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="flex-1 rounded-full overflow-hidden shadow-inner" style="height:8px;background:#e2e8f0;">
-            <div style="width:${pct}%;height:100%;border-radius:9999px;background:${color};transition:width .5s;"></div>
-          </div>
-          <span class="text-sm font-black" style="color:${color};width:36px;text-align:right;">${pct}%</span>
-        </div>
+      const color = pct>=80?'#059669':pct>=50?'#d97706':'#e11d48'; // Emerald, Amber, Rose
+      return `
+      <div class="flex items-center justify-between p-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors rounded">
+         <div class="w-1/3 text-xs font-bold text-slate-700 truncate pr-2" title="${v.label}">${v.label}</div>
+         <div class="w-1/2 flex items-center gap-3">
+            <div class="w-full bg-slate-200 rounded-full h-2 shadow-inner overflow-hidden">
+               <div class="h-2 rounded-full transition-all duration-500" style="width: ${pct}%; background-color: ${color};"></div>
+            </div>
+            <span class="text-xs font-black text-slate-600 w-10 text-right">${pct}%</span>
+         </div>
+         <div class="w-1/6 text-right text-[11px] font-bold text-slate-500">${count}/${total}</div>
       </div>`;
     }).join('');
   }
@@ -1278,6 +1306,125 @@
     if(l) extra.push('รพ:' + l);
     return formatDate(date) + (extra.length ? ` [${extra.join(', ')}]` : '');
   }
+
+  // === ฟังก์ชันดาวน์โหลด Template Excel สำหรับนำเข้า ===
+  document.getElementById('btn-download-template').addEventListener('click', function() {
+    if (typeof XLSX === 'undefined') { showError('ไลบรารี Excel ยังไม่พร้อม'); return; }
+    
+    // สร้าง 1 แถวตัวอย่าง เพื่อให้เห็นรูปแบบ
+    const templateData = [{
+      'ชื่อ-นามสกุล': 'ด.ช. ตัวอย่าง เรียนดี',
+      'ชื่อเล่น': 'น้องเทส',
+      'เลขบัตรประชาชน': '1234567890123',
+      'วันเกิด (YYYY-MM-DD)': '2015-05-20',
+      'เพศ (ชาย/หญิง)': 'ชาย',
+      'หมู่เลือด': 'O',
+      'โรงเรียน': 'รร.ราชประชาฯ 30',
+      'ระดับชั้น/ห้องเรียน': 'ป.1/1',
+      'รหัสโรงพยาบาล (HN)': 'HN123456',
+      'น้ำหนัก (กก.)': '25.5',
+      'ส่วนสูง (ซม.)': '120',
+      'บ้านเลขที่': '123/4',
+      'หมู่ที่': '5',
+      'ตำบล': 'มะลิกา',
+      'อำเภอ': 'แม่อาย',
+      'จังหวัด': 'เชียงใหม่',
+      'ชื่อผู้ปกครอง': 'นาย ทดสอบ เรียนดี',
+      'เบอร์โทรผู้ปกครอง': '0812345678'
+    }];
+    
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    // ปรับความกว้างคอลัมน์ให้สวยงาม
+    ws['!cols'] = Object.keys(templateData[0]).map(() => ({ wch: 20 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, 'Vaccine_Student_Template.xlsx');
+  });
+
+  // === ฟังก์ชันนำเข้าข้อมูลจาก Excel (Bulk Upload) ===
+  document.getElementById('file-import-excel').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (typeof XLSX === 'undefined') { showError('ไลบรารี Excel ยังไม่พร้อม'); return; }
+
+    const reader = new FileReader();
+    reader.onload = async function(event) {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // แปลงเป็น JSON
+        const rawData = XLSX.utils.sheet_to_json(worksheet, {raw: false});
+        
+        if (rawData.length === 0) {
+           alert('ไม่พบข้อมูลในไฟล์ Excel');
+           return;
+        }
+
+        // เปิด Modal แจ้งเตือนความคืบหน้า
+        const progressModal = document.getElementById('import-progress-modal');
+        const progressBar = document.getElementById('import-progress-bar');
+        const progressText = document.getElementById('import-status-text');
+        progressModal.classList.remove('hidden');
+        
+        let successCount = 0;
+        let failCount = 0;
+
+        // วนลูปบันทึกข้อมูลทีละรายการ
+        for (let i = 0; i < rawData.length; i++) {
+           const row = rawData[i];
+           const newStudent = {};
+           
+           // แปลงข้อมูลตาม Map
+           for (const [thaiKey, enKey] of Object.entries(importMap)) {
+              if (row[thaiKey] !== undefined) {
+                 newStudent[enKey] = row[thaiKey];
+              }
+           }
+           
+           // ตรวจสอบข้อมูลจำเป็น
+           if (!newStudent.full_name) {
+              failCount++;
+              continue; // ข้ามแถวที่ไม่มีชื่อ
+           }
+
+           newStudent.created_at = new Date().toISOString();
+           
+           // บันทึกผ่าน SDK
+           const result = await window.dataSdk.create(newStudent);
+           if (result.isOk) {
+              successCount++;
+           } else {
+              failCount++;
+           }
+
+           // อัปเดต Progress Bar
+           const percent = Math.round(((i + 1) / rawData.length) * 100);
+           progressBar.style.width = percent + '%';
+           progressText.textContent = `${i + 1} / ${rawData.length} รายการ`;
+        }
+
+        // เสร็จสิ้น
+        progressModal.classList.add('hidden');
+        document.getElementById('file-import-excel').value = ''; // รีเซ็ต input
+        
+        // แจ้งเตือนผลลัพธ์
+        alert(`นำเข้าข้อมูลเสร็จสิ้น!\nสำเร็จ: ${successCount} รายการ\nล้มเหลว/ข้าม: ${failCount} รายการ`);
+        
+        // รีเฟรชหน้าจอ (ถ้าจำเป็น)
+        if(window.dataSdk._fetchData) await window.dataSdk._fetchData();
+
+      } catch (err) {
+        document.getElementById('import-progress-modal').classList.add('hidden');
+        document.getElementById('file-import-excel').value = '';
+        alert('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
 
   // === ฟังก์ชันส่งออก Excel หลัก ===
   function exportToExcel(targetStudents, filenamePrefix) {
@@ -1711,7 +1858,7 @@
 
   async function init(){
     lucide.createIcons();
-    checkLogin(); // เช็คสถานะการล็อกอินตอนเปิดหน้าเว็บ
+    checkLogin(); 
     const r = await window.dataSdk.init(handler);
     if(r.isOk){ /* Ready */ } 
     else {
