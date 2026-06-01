@@ -728,6 +728,116 @@
                 </div>
               </div>
             </div>
+
+            <!-- ส่วนที่เพิ่มใหม่: ข้อควรรู้และข้อควรระวัง -->
+            <div class="rounded-xl border border-amber-200 bg-white shadow-md shadow-gray-400/50 mt-6 overflow-hidden">
+              <div class="bg-amber-500 p-4 border-b border-amber-600 flex items-center gap-2">
+                 <i data-lucide="alert-circle" class="text-white" style="width:24px;height:24px;"></i>
+                 <h3 class="font-black text-white text-lg">ข้อควรรู้และข้อควรระวัง ในการรับวัคซีน</h3>
+              </div>
+              <div class="p-5 grid sm:grid-cols-2 gap-5">
+                 <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <h4 class="font-black text-amber-800 mb-2 flex items-center gap-1.5"><i data-lucide="arrow-right-circle" style="width:18px;height:18px;"></i> ก่อนรับวัคซีน</h4>
+                    <ul class="list-disc pl-4 text-sm font-bold text-slate-700 space-y-1">
+                       <li>หากเด็กไม่สบายเล็กน้อย เช่น มีน้ำมูก ไอ (ไม่มีไข้) <span class="text-emerald-600">สามารถรับวัคซีนได้</span></li>
+                       <li>หาก <span class="text-rose-600">มีไข้สูง</span> หรือเจ็บป่วยรุนแรง ควรเลื่อนการรับวัคซีนออกไปก่อน</li>
+                       <li>ต้องแจ้งเจ้าหน้าที่ทุกครั้ง หากเด็กเคยมีประวัติ <span class="text-rose-600">แพ้วัคซีน แพ้ยา แพ้ไข่ไก่ หรือแพ้ยีสต์</span> รุนแรง</li>
+                       <li>ผู้ที่มีภาวะภูมิคุ้มกันบกพร่อง รบยากดภูมิ หรือหญิงตั้งครรภ์ <span class="text-rose-600">ห้ามรับวัคซีนชนิดเชื้อเป็น</span> (เช่น หัดฯ, เจอี, สุกใส)</li>
+                    </ul>
+                 </div>
+                 <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                    <h4 class="font-black text-emerald-800 mb-2 flex items-center gap-1.5"><i data-lucide="check-circle" style="width:18px;height:18px;"></i> หลังรับวัคซีน</h4>
+                    <ul class="list-disc pl-4 text-sm font-bold text-slate-700 space-y-1">
+                       <li>ให้นั่งพักสังเกตอาการ ณ สถานพยาบาล <span class="text-rose-600">อย่างน้อย 30 นาที</span></li>
+                       <li>หากมีอาการปวด บวม แดง บริเวณที่ฉีด ให้ <span class="text-blue-600">ประคบเย็น</span></li>
+                       <li>หากมีไข้ สามารถเช็ดตัวด้วยน้ำอุ่น และให้กินยาลดไข้ (พาราเซตามอล) ตามน้ำหนักตัว</li>
+                       <li>หากมีอาการแพ้รุนแรง (ผื่นลมพิษ, หายใจลำบาก, ปากบวม, หน้าบวม) ให้ <span class="text-rose-600">รีบพบแพทย์ทันที หรือโทร 1669</span></li>
+                    </ul>
+                 </div>
+              </div>
+            </div>
+
+            <!-- ส่วนที่เพิ่มใหม่: ตารางรายละเอียดเชิงลึก (วิธีให้/ปริมาณ) -->
+            <div class="rounded-xl border border-blue-200 bg-white shadow-md shadow-gray-400/50 mt-6 overflow-hidden">
+              <div class="bg-blue-800 p-4 border-b border-blue-900 flex items-center gap-2">
+                 <i data-lucide="syringe" class="text-white" style="width:24px;height:24px;"></i>
+                 <h3 class="font-black text-white text-lg">รายละเอียดการให้วัคซีน (ปริมาณ, วิธีให้, ระยะห่าง)</h3>
+              </div>
+              <div class="overflow-x-auto p-0">
+                 <table class="w-full text-sm text-left border-collapse">
+                    <thead>
+                       <tr class="bg-blue-100 text-black font-black border-b-2 border-blue-200">
+                          <th class="p-3 border-r border-blue-200">ชนิดวัคซีน</th>
+                          <th class="p-3 border-r border-blue-200 text-center">ปริมาณ</th>
+                          <th class="p-3 border-r border-blue-200 text-center whitespace-nowrap">วิธีให้ / ตำแหน่ง</th>
+                          <th class="p-3">จำนวนเข็ม / ระยะห่าง</th>
+                       </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-100">
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">วัณโรค (BCG)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.1 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-slate-200 px-2 py-0.5 rounded text-xs">ฉีดในชั้นผิวหนัง (ID)</span><br>ไหล่ซ้าย</td>
+                          <td class="p-3 font-bold text-slate-700">1 เข็ม (แรกเกิด)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">ตับอักเสบบี (HB)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">ฉีดเข้ากล้ามเนื้อ (IM)</span><br>หน้าขา</td>
+                          <td class="p-3 font-bold text-slate-700">1-2 เข็ม (หากแม่เป็นพาหะให้เพิ่มเข็มตอน 1 เดือน)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">วัคซีนรวม 5 โรค (DTP-HB-Hib)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">ฉีดเข้ากล้ามเนื้อ (IM)</span><br>หน้าขา</td>
+                          <td class="p-3 font-bold text-slate-700">3 เข็มพื้นฐาน (ห่างกัน 2 เดือน) และกระตุ้นตามเกณฑ์อายุ</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">โปลิโอแบบหยอด (OPV)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">2 หยด</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs">หยอดเข้าปาก (PO)</span></td>
+                          <td class="p-3 font-bold text-slate-700">5 ครั้ง (2, 4, 6 ด., 1.5 ปี, 4 ปี)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">โปลิโอแบบฉีด (IPV)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">ฉีดเข้ากล้ามเนื้อ (IM)</span><br>หน้าขา / ต้นแขน</td>
+                          <td class="p-3 font-bold text-slate-700">1 เข็ม (อายุ 4 เดือน)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">โรต้า (Rota)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">1.5 - 2 มล.<br><span class="text-[10px] text-slate-500">(ตามยี่ห้อ)</span></td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs">หยอดเข้าปาก (PO)</span></td>
+                          <td class="p-3 font-bold text-slate-700">2-3 ครั้ง ห่างกันอย่างน้อย 4 สัปดาห์ (ต้องเสร็จก่อนอายุ 8 เดือน)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">หัด-คางทูม-หัดเยอรมัน (MMR)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">ฉีดใต้ผิวหนัง (SC)</span><br>ต้นแขน</td>
+                          <td class="p-3 font-bold text-slate-700">2 เข็ม (อายุ 9 เดือน และ 1.5 ปี)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">ไข้สมองอักเสบเจอี เชื้อเป็น (LAJE)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">ฉีดใต้ผิวหนัง (SC)</span><br>ต้นแขน</td>
+                          <td class="p-3 font-bold text-slate-700">2 เข็ม ห่างกัน 12-24 เดือน (อายุ 1 ปี และ 2.5 ปี)</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">เอชพีวี (HPV)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">ฉีดเข้ากล้ามเนื้อ (IM)</span><br>ต้นแขน</td>
+                          <td class="p-3 font-bold text-slate-700">อายุ &lt; 15 ปี ฉีด 2 เข็ม ห่างกันอย่างน้อย 6 เดือน</td>
+                       </tr>
+                       <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
+                          <td class="p-3 font-bold text-black border-r border-blue-100">ไข้หวัดใหญ่ (Flu)</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
+                          <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">ฉีดเข้ากล้ามเนื้อ (IM)</span><br>ต้นแขน</td>
+                          <td class="p-3 font-bold text-slate-700">เด็ก &lt; 9 ปี รับครั้งแรกฉีด 2 เข็ม ห่าง 1 ด., หลังจากนั้นฉีดปีละ 1 เข็ม</td>
+                       </tr>
+                    </tbody>
+                 </table>
+              </div>
+            </div>
             
             <div class="grid sm:grid-cols-2 gap-4 mt-6">
               <a href="การสร้างเสริมภูมิคุ้มกัน ตลอดชีวิต 2569.pdf" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white text-blue-800 hover:bg-blue-50 p-4 rounded-xl transition-transform transform hover:-translate-y-1 shadow-md border border-blue-200 group">
