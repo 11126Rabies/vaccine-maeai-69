@@ -1582,14 +1582,20 @@
   const forecastModal = document.getElementById('forecast-modal');
   const fcYearSelect = document.getElementById('fc-year');
   const fcSchoolSelect = document.getElementById('fc-school');
+  let currentForecastRows = []; // เก็บข้อมูลตาราง
   
   document.getElementById('open-forecast-btn').addEventListener('click', () => {
     const currentYear = new Date().getFullYear();
-    fcYearSelect.innerHTML = `<option value="${currentYear}">${currentYear}</option><option value="${currentYear+1}">${currentYear+1}</option>`;
+    fcYearSelect.innerHTML = `<option value="${currentYear}">${currentYear + 543}</option><option value="${currentYear+1}">${currentYear + 544}</option>`;
     document.getElementById('fc-month').value = new Date().getMonth().toString();
 
     const schools = [...new Set(allStudents.map(s=>s.school).filter(Boolean))].sort();
     fcSchoolSelect.innerHTML = '<option value="">-- ทุกโรงเรียน --</option>' + schools.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');
+    
+    // เคลียร์หน้าจอตัวอย่างทุกครั้งที่เปิดใหม่
+    document.getElementById('forecast-preview-container').innerHTML = `<div class="text-center py-10 text-slate-400 font-bold"><i data-lucide="table" class="mx-auto mb-3 opacity-50" style="width:48px;height:48px;"></i>ระบุเงื่อนไขด้านบน แล้วกด "ค้นหา / ดูตัวอย่าง"</div>`;
+    document.getElementById('btn-execute-forecast').classList.add('hidden');
+    document.getElementById('forecast-summary-text').textContent = '';
     
     forecastModal.classList.remove('hidden');
     lucide.createIcons({root: forecastModal});
@@ -1597,13 +1603,14 @@
 
   document.getElementById('close-forecast-btn').addEventListener('click', () => forecastModal.classList.add('hidden'));
 
-  document.getElementById('btn-execute-forecast').addEventListener('click', () => {
+  // ฟังก์ชันค้นหาและสร้างตารางดูตัวอย่าง (Preview)
+  document.getElementById('btn-preview-forecast').addEventListener('click', () => {
     const targetMonth = parseInt(document.getElementById('fc-month').value);
     const targetYear = parseInt(document.getElementById('fc-year').value);
     const targetSchool = fcSchoolSelect.value;
     const includeMissing = document.getElementById('fc-include-missing').checked;
 
-    const forecastRows = [];
+    currentForecastRows = [];
 
     allStudents.forEach(s => {
       if (targetSchool && s.school !== targetSchool) return;
@@ -1612,17 +1619,19 @@
       if (analysis.noDob) return; 
 
       const sAge = s.date_of_birth ? calcAge(s.date_of_birth) : '-';
+      const parentPhone = s.guardian_phone || s.mother_phone || s.father_phone || '-';
 
       // เช็คคิวฉีดล่วงหน้า (Upcoming)
       analysis.upcoming.forEach(v => {
         const tDate = new Date(v.targetDate);
         if (tDate.getMonth() === targetMonth && tDate.getFullYear() === targetYear) {
-          forecastRows.push({
+          currentForecastRows.push({
             'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
-            'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ผู้ปกครอง': s.guardian_phone || s.mother_phone || s.father_phone || '-',
+            'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ติดต่อ': parentPhone,
             'วัคซีนที่ต้องฉีด': v.label,
             'วันที่ครบกำหนดฉีด': formatDate(tDate),
-            'สถานะ': 'ตามกำหนดนัด'
+            'สถานะ': 'ตามกำหนดนัด',
+            '_statusClass': 'text-emerald-600 bg-emerald-50 border-emerald-200'
           });
         }
       });
@@ -1632,31 +1641,98 @@
         analysis.missing.forEach(v => {
           const tDate = new Date(v.targetDate);
           if (tDate.getFullYear() < targetYear || (tDate.getFullYear() === targetYear && tDate.getMonth() <= targetMonth)) {
-            forecastRows.push({
+            currentForecastRows.push({
               'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
-              'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ผู้ปกครอง': s.guardian_phone || s.mother_phone || s.father_phone || '-',
+              'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ติดต่อ': parentPhone,
               'วัคซีนที่ต้องฉีด': v.label,
               'วันที่ครบกำหนดฉีด': formatDate(tDate),
-              'สถานะ': `ล่าช้า (${v.daysLate} วัน)`
+              'สถานะ': `ล่าช้า (${v.daysLate} วัน)`,
+              '_statusClass': 'text-rose-600 bg-rose-50 border-rose-200'
             });
           }
         });
       }
     });
 
-    if (forecastRows.length === 0) {
-      alert("ไม่พบข้อมูลนักเรียนที่ต้องรับวัคซีนในเดือนที่ระบุ");
+    renderForecastPreview();
+  });
+
+  // ฟังก์ชันวาดตารางแสดงผลใน Modal
+  function renderForecastPreview() {
+    const container = document.getElementById('forecast-preview-container');
+    const exportBtn = document.getElementById('btn-execute-forecast');
+    const summaryText = document.getElementById('forecast-summary-text');
+
+    if (currentForecastRows.length === 0) {
+      container.innerHTML = `<div class="text-center py-10 text-slate-500 font-bold"><i data-lucide="inbox" class="mx-auto mb-2" style="width:32px;height:32px;"></i>ไม่พบข้อมูลเป้าหมายในเดือนที่ระบุ</div>`;
+      exportBtn.classList.add('hidden');
+      summaryText.textContent = '';
+      lucide.createIcons({root: container});
       return;
     }
 
+    let html = `<table class="w-full border-collapse border-2 border-black text-xs md:text-sm">
+      <thead>
+        <tr class="bg-amber-200/60 border-b-2 border-black text-black">
+          <th class="p-2 border-r border-black text-left">โรงเรียน (ชั้น)</th>
+          <th class="p-2 border-r border-black text-left">ชื่อ-นามสกุล</th>
+          <th class="p-2 border-r border-black text-left">วัคซีนเป้าหมาย</th>
+          <th class="p-2 border-r border-black text-center whitespace-nowrap">วันที่นัดหมาย</th>
+          <th class="p-2 text-center">สถานะ</th>
+        </tr>
+      </thead>
+      <tbody>`;
+    
+    currentForecastRows.forEach(row => {
+      html += `<tr class="border-b border-black hover:bg-slate-50 transition-colors">
+        <td class="p-2 border-r border-black align-top">
+           <span class="font-bold text-slate-800">${esc(row['โรงเรียน'])}</span><br>
+           <span class="text-[11px] text-slate-500">ชั้น: ${esc(row['ระดับชั้น'])}</span>
+        </td>
+        <td class="p-2 border-r border-black align-top font-bold text-black">
+           ${esc(row['ชื่อ-นามสกุล'])}
+           <div class="text-[11px] text-slate-500 font-normal flex items-center gap-1 mt-0.5"><i data-lucide="phone" style="width:12px;height:12px;"></i> ${esc(row['เบอร์ติดต่อ'])}</div>
+        </td>
+        <td class="p-2 border-r border-black align-top font-black text-blue-700">${esc(row['วัคซีนที่ต้องฉีด'])}</td>
+        <td class="p-2 border-r border-black align-top text-center font-bold text-black whitespace-nowrap">${esc(row['วันที่ครบกำหนดฉีด'])}</td>
+        <td class="p-2 align-top text-center">
+           <span class="inline-block px-2 py-1 rounded border font-bold text-[11px] ${row._statusClass || ''}">${esc(row['สถานะ'])}</span>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+    exportBtn.classList.remove('hidden');
+    summaryText.textContent = `พบกลุ่มเป้าหมายทั้งหมด ${currentForecastRows.length} รายการ`;
+    lucide.createIcons({root: container});
+  }
+
+  // กดส่งออกเฉพาะข้อมูลที่ถูกสร้างในตาราง Preview
+  document.getElementById('btn-execute-forecast').addEventListener('click', () => {
     try {
-      const ws = XLSX.utils.json_to_sheet(forecastRows); 
+      // คัดลอกข้อมูลและลบฟิลด์ _statusClass ออกก่อน Export
+      const exportData = currentForecastRows.map(row => {
+        const { _statusClass, ...cleanRow } = row;
+        return cleanRow;
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportData); 
+      
+      // ปรับขนาดความกว้างคอลัมน์ให้สวยงาม
+      ws['!cols'] = [{wch: 20}, {wch: 10}, {wch: 25}, {wch: 10}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 20}];
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'แผนติดตามวัคซีน');
+      
+      const targetMonth = parseInt(document.getElementById('fc-month').value);
+      const targetYear = parseInt(document.getElementById('fc-year').value);
       const filename = `Vaccine_Plan_${targetYear}_${targetMonth+1}.xlsx`;
+      
       XLSX.writeFile(wb, filename); 
-      forecastModal.classList.add('hidden');
-    } catch (err) { showError('ไม่สามารถส่งออก Excel ได้'); }
+    } catch (err) { 
+      showError('ไม่สามารถส่งออก Excel ได้'); 
+    }
   });
 
   function getVaxCellDisplay(s, baseKey) {
