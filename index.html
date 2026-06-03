@@ -74,7 +74,7 @@
         setTimeout(() => handler.onDataChanged(this._data), 100);
       },
       _mockCreate: async function(data) {
-        data.__backendId = Date.now().toString() + Math.floor(Math.random()*1000);
+        data.__backendId = Date.now().toString();
         this._data.push(data);
         this._saveMock();
         return { isOk: true };
@@ -160,7 +160,7 @@
         </button>
       </form>
       <div class="mt-6 text-center text-xs font-bold text-slate-400">
-        โรงพยาบาลแม่อาย (v1.4.5)
+        โรงพยาบาลแม่อาย (v1.4.4)
       </div>
     </div>
   </div>
@@ -173,7 +173,7 @@
           <i data-lucide="shield-plus"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.5</span></h1>
+          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.4</span></h1>
           <p class="text-xs font-bold text-black">อนามัยโรงเรียน รพ.แม่อาย</p>
         </div>
       </div>
@@ -1571,32 +1571,63 @@
       const analysis = analyzeVaccines(s);
       if (analysis.noDob) return; 
 
-      const sAge = s.date_of_birth ? calcAge(s.date_of_birth) : '-';
-      const parentPhone = s.guardian_phone || s.mother_phone || s.father_phone || '-';
+      let targetsThisMonth = [];
+      let isDelayed = false;
+      let maxDelayDays = 0;
 
+      // ตรวจสอบวัคซีนในอนาคตที่ตรงกับเดือนที่เลือก
       analysis.upcoming.forEach(v => {
         const tDate = new Date(v.targetDate);
         if (tDate.getMonth() === targetMonth && tDate.getFullYear() === targetYear) {
-          currentForecastRows.push({
-            'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
-            'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ติดต่อ': parentPhone,
-            'วัคซีนที่ต้องฉีด': v.label, 'วันที่ครบกำหนดฉีด': formatDate(tDate), 'สถานะ': 'ตามกำหนดนัด',
-            '_statusClass': 'text-emerald-600 bg-emerald-50 border-emerald-200'
-          });
+          targetsThisMonth.push(`${v.label} (${formatDate(tDate)})`);
         }
       });
 
+      // ตรวจสอบวัคซีนที่ขาดนัด/ล่าช้า (ถ้ารวมด้วย)
       if (includeMissing) {
         analysis.missing.forEach(v => {
           const tDate = new Date(v.targetDate);
           if (tDate.getFullYear() < targetYear || (tDate.getFullYear() === targetYear && tDate.getMonth() <= targetMonth)) {
-            currentForecastRows.push({
-              'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
-              'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ติดต่อ': parentPhone,
-              'วัคซีนที่ต้องฉีด': v.label, 'วันที่ครบกำหนดฉีด': formatDate(tDate), 'สถานะ': `ล่าช้า (${v.daysLate} วัน)`,
-              '_statusClass': 'text-rose-600 bg-rose-50 border-rose-200'
-            });
+            targetsThisMonth.push(`🚨 ${v.label} (ควรฉีด ${formatDate(tDate)})`);
+            isDelayed = true;
+            if (v.daysLate > maxDelayDays) maxDelayDays = v.daysLate;
           }
+        });
+      }
+
+      // ถ้าเด็กคนนี้มีวัคซีนที่ต้องฉีดในเดือนที่เลือก (หรือมีของเก่าค้าง)
+      if (targetsThisMonth.length > 0) {
+        
+        // หาประวัติเข็มล่าสุดที่เพิ่งฉีดไป
+        let lastReceivedStr = "-";
+        if (analysis.received.length > 0) {
+           const sortedRec = [...analysis.received].sort((a,b) => b.date - a.date);
+           lastReceivedStr = `${sortedRec[0].label} (${formatDate(sortedRec[0].date)})`;
+        }
+
+        // หาคิวฉีดเข็มถัดไป (ที่อยู่หลังจากเดือนที่เลือกนี้)
+        let futureStrArr = [];
+        analysis.upcoming.forEach(v => {
+           const tDate = new Date(v.targetDate);
+           if (tDate.getFullYear() > targetYear || (tDate.getFullYear() === targetYear && tDate.getMonth() > targetMonth)) {
+               futureStrArr.push(`${v.label} (${formatDate(tDate)})`);
+           }
+        });
+        // แสดงแค่ 2 รายการแรกเพื่อไม่ให้รกเกินไป
+        let futureStr = futureStrArr.length > 0 ? futureStrArr.slice(0,2).join(', ') + (futureStrArr.length > 2 ? ' ...' : '') : '-';
+
+        currentForecastRows.push({
+          'โรงเรียน': s.school || '-',
+          'ระดับชั้น': s.class_room || '-',
+          'ชื่อ-นามสกุล': s.full_name,
+          'อายุ(ปี)': calcAge(s.date_of_birth),
+          'เบอร์ติดต่อ': s.guardian_phone || s.mother_phone || s.father_phone || '-',
+          'ประวัติฉีดล่าสุด': lastReceivedStr,
+          'วัคซีนเป้าหมาย (เดือนนี้)': targetsThisMonth.join(', '), // สำหรับ Excel ใช้ comma
+          'กำหนดนัดเข็มถัดไป': futureStr,
+          'สถานะ': isDelayed ? `ล่าช้า (${maxDelayDays} วัน)` : 'ตามกำหนดนัด',
+          '_statusClass': isDelayed ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200',
+          '_targetsHtml': targetsThisMonth.map(t => `<div class="mb-1 ${t.includes('🚨') ? 'text-rose-600 font-bold' : 'text-blue-700 font-bold'}">${t}</div>`).join('') // สำหรับแสดงผล HTML
         });
       }
     });
@@ -1621,10 +1652,11 @@
       <thead>
         <tr class="bg-amber-200/60 border-b-2 border-black text-black">
           <th class="p-2 border-r border-black text-left">โรงเรียน (ชั้น)</th>
-          <th class="p-2 border-r border-black text-left">ชื่อ-นามสกุล</th>
-          <th class="p-2 border-r border-black text-left">วัคซีนเป้าหมาย</th>
-          <th class="p-2 border-r border-black text-center whitespace-nowrap">วันที่นัดหมาย</th>
-          <th class="p-2 text-center">สถานะ</th>
+          <th class="p-2 border-r border-black text-left w-48">ชื่อ-นามสกุล / ติดต่อ</th>
+          <th class="p-2 border-r border-black text-left bg-blue-100">ประวัติเข็มล่าสุด (วันที่ฉีด)</th>
+          <th class="p-2 border-r border-black text-left bg-amber-100">วัคซีนที่ต้องฉีด (คิวเดือนนี้ & ล่าช้า)</th>
+          <th class="p-2 border-r border-black text-left text-slate-600">กำหนดนัดเข็มถัดไป (อนาคต)</th>
+          <th class="p-2 text-center w-24">สถานะ</th>
         </tr>
       </thead>
       <tbody>`;
@@ -1632,9 +1664,14 @@
     currentForecastRows.forEach(row => {
       html += `<tr class="border-b border-black hover:bg-slate-50 transition-colors">
         <td class="p-2 border-r border-black align-top"><span class="font-bold text-slate-800">${esc(row['โรงเรียน'])}</span><br><span class="text-[11px] text-slate-500">ชั้น: ${esc(row['ระดับชั้น'])}</span></td>
-        <td class="p-2 border-r border-black align-top font-bold text-black">${esc(row['ชื่อ-นามสกุล'])}<div class="text-[11px] text-slate-500 font-normal flex items-center gap-1 mt-0.5"><i data-lucide="phone" style="width:12px;height:12px;"></i> ${esc(row['เบอร์ติดต่อ'])}</div></td>
-        <td class="p-2 border-r border-black align-top font-black text-blue-700">${esc(row['วัคซีนที่ต้องฉีด'])}</td>
-        <td class="p-2 border-r border-black align-top text-center font-bold text-black whitespace-nowrap">${esc(row['วันที่ครบกำหนดฉีด'])}</td>
+        <td class="p-2 border-r border-black align-top">
+           <div class="font-bold text-black">${esc(row['ชื่อ-นามสกุล'])}</div>
+           <div class="text-[11px] text-slate-500 font-normal mt-0.5">อายุ ${esc(row['อายุ(ปี)'])} ปี</div>
+           <div class="text-[11px] text-slate-500 font-normal flex items-center gap-1 mt-0.5"><i data-lucide="phone" style="width:12px;height:12px;"></i> ${esc(row['เบอร์ติดต่อ'])}</div>
+        </td>
+        <td class="p-2 border-r border-black align-top text-xs text-slate-600">${esc(row['ประวัติฉีดล่าสุด'])}</td>
+        <td class="p-2 border-r border-black align-top bg-amber-50/30">${row._targetsHtml}</td>
+        <td class="p-2 border-r border-black align-top text-xs text-slate-500">${esc(row['กำหนดนัดเข็มถัดไป'])}</td>
         <td class="p-2 align-top text-center"><span class="inline-block px-2 py-1 rounded border font-bold text-[11px] ${row._statusClass || ''}">${esc(row['สถานะ'])}</span></td>
       </tr>`;
     });
@@ -1648,9 +1685,13 @@
 
   document.getElementById('btn-execute-forecast').addEventListener('click', () => {
     try {
-      const exportData = currentForecastRows.map(row => { const { _statusClass, ...cleanRow } = row; return cleanRow; });
+      const exportData = currentForecastRows.map(row => { 
+        const { _statusClass, _targetsHtml, ...cleanRow } = row; 
+        return cleanRow; 
+      });
       const ws = XLSX.utils.json_to_sheet(exportData); 
-      ws['!cols'] = [{wch: 20}, {wch: 10}, {wch: 25}, {wch: 10}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 20}];
+      // ปรับขนาดความกว้างคอลัมน์ให้เหมาะสมใน Excel
+      ws['!cols'] = [{wch: 18}, {wch: 10}, {wch: 25}, {wch: 8}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 25}, {wch: 15}];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'แผนติดตามวัคซีน');
       const targetMonth = parseInt(document.getElementById('fc-month').value);
