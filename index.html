@@ -160,7 +160,7 @@
         </button>
       </form>
       <div class="mt-6 text-center text-xs font-bold text-slate-400">
-        โรงพยาบาลแม่อาย (v1.4.4)
+        โรงพยาบาลแม่อาย (v1.4.5)
       </div>
     </div>
   </div>
@@ -173,7 +173,7 @@
           <i data-lucide="shield-plus"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.4</span></h1>
+          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.5</span></h1>
           <p class="text-xs font-bold text-black">อนามัยโรงเรียน รพ.แม่อาย</p>
         </div>
       </div>
@@ -259,19 +259,16 @@
         </div>
       </div>
 
-      <!-- ส่วนตารางแสดงจำนวนนักเรียนรายโรงเรียน -->
       <div class="rounded-xl p-5 border border-blue-200 shadow-md shadow-gray-400/50 mt-4 bg-blue-50">
         <h3 class="font-bold text-black mb-4 flex items-center gap-2"><i data-lucide="school" style="width:20px;height:20px;" class="text-blue-600"></i> สถิติจำนวนนักเรียนแยกตามโรงเรียนและระดับชั้น</h3>
         <div id="school-class-table-container" class="overflow-x-auto bg-white rounded-lg border-2 border-black">
-          <!-- ตารางจะถูกสร้างผ่าน JS -->
+          <!-- ตารางถูกสร้างผ่าน JS -->
         </div>
       </div>
       
-      <!-- อัตราการได้รับวัคซีนแบบจัด Layout ใหม่ -->
       <div class="rounded-xl p-5 border border-blue-200 shadow-md shadow-gray-400/50 mt-4 bg-blue-50">
         <h3 class="font-bold text-black mb-4 flex items-center gap-2"><i data-lucide="activity" style="width:20px;height:20px;" class="text-emerald-600"></i> อัตราการได้รับวัคซีนแต่ละประเภท</h3>
         <div class="bg-white rounded-xl border border-blue-200 shadow-sm p-4">
-           <!-- แสดงข้อมูลแบบคอลัมน์รายการที่สะอาดตา -->
            <div id="vaccine-chart" class="grid lg:grid-cols-2 gap-x-8 gap-y-1"></div>
         </div>
       </div>
@@ -342,6 +339,7 @@
           <button type="button" id="cancel-edit-btn" class="hidden text-sm px-4 py-1.5 rounded-lg transition-colors border border-black text-black bg-white hover:bg-blue-100 shadow-sm font-bold">ยกเลิกการแก้ไข</button>
         </div>
         
+        <!-- ข้อมูลส่วนตัว -->
         <fieldset class="rounded-xl p-5 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50">
           <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">ข้อมูลส่วนตัว</legend>
           
@@ -390,6 +388,7 @@
           </div>
         </fieldset>
 
+        <!-- ที่อยู่ปัจจุบัน -->
         <fieldset class="rounded-xl p-5 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50">
           <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">ที่อยู่ปัจจุบัน</legend>
           <div class="grid sm:grid-cols-3 gap-4 mt-2">
@@ -402,6 +401,7 @@
           </div>
         </fieldset>
 
+        <!-- ข้อมูลครอบครัว -->
         <fieldset class="rounded-xl p-5 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50">
           <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">ข้อมูลครอบครัว</legend>
           <div class="grid sm:grid-cols-3 gap-4 mt-2">
@@ -417,6 +417,7 @@
           </div>
         </fieldset>
 
+        <!-- ผู้ปกครอง -->
         <fieldset class="rounded-xl p-5 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50">
           <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">ข้อมูลผู้ปกครอง</legend>
           <div class="grid sm:grid-cols-3 gap-4 mt-2">
@@ -427,6 +428,7 @@
           </div>
         </fieldset>
 
+        <!-- ตารางวัคซีน -->
         <fieldset class="rounded-xl p-0 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50 overflow-hidden">
           <div class="p-4 border-b border-blue-300 bg-blue-200">
             <h3 class="font-black text-black">บันทึกการได้รับวัคซีนตามแผนงานสร้างเสริมภูมิคุ้มกันโรคของประเทศไทย</h3>
@@ -457,7 +459,7 @@
                 </tr>
                 <tr>
                   <td class="font-bold text-black">ตับอักเสบบี (HB)</td>
-                  <td class="text-center text-xs font-bold text-black">แรกเกิด, 1 ด.<br>(เฉพาะแม่เป็นพาหะ)</td>
+                  <td class="text-center text-xs font-bold text-black">แรกเกิด, 1 ด.</td>
                   <td>
                     <div class="vax-input-group"><input type="date" id="f-vhb1" class="vax-input"><input type="text" id="f-vhb1-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vhb1-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
@@ -515,8 +517,8 @@
                   <td class="bg-blue-100/50"></td>
                 </tr>
                 <tr>
-                  <td class="font-bold text-black">หัด-คางทูม-หัดเยอรมัน<br>(MMR)</td>
-                  <td class="text-center text-xs font-bold text-black">9 ด., 1.5 ปี<br>(หรือ 2.5 ปี)</td>
+                  <td class="font-bold text-black">หัด-คางทูม-หัดเยอรมัน (MMR)</td>
+                  <td class="text-center text-xs font-bold text-black">9 ด., 1.5 ปี</td>
                   <td>
                     <div class="vax-input-group"><span class="text-[10px] font-bold text-black text-center mb-1">อายุ 9 เดือน</span><input type="date" id="f-vmmr1" class="vax-input"><input type="text" id="f-vmmr1-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vmmr1-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
@@ -548,7 +550,7 @@
                   <td class="bg-blue-100/50"></td>
                 </tr>
                 <tr>
-                  <td class="font-bold text-black">กระตุ้นช่วงอายุ 4 ปี<br>(DTP)</td>
+                  <td class="font-bold text-black">กระตุ้นช่วงอายุ 4 ปี (DTP)</td>
                   <td class="text-center text-xs font-bold text-black">4 ปี</td>
                   <td>
                     <div class="vax-input-group"><span class="text-[10px] font-bold text-black text-center mb-1">DTP ครั้งที่ 5</span><input type="date" id="f-vdtp5" class="vax-input"><input type="text" id="f-vdtp5-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vdtp5-l" class="vax-input" placeholder="สถานที่"></div>
@@ -557,7 +559,7 @@
                 </tr>
                 <tr>
                   <td class="font-bold text-black">ฉีดวัคซีนป้องกันเอชพีวี (HPV)</td>
-                  <td class="text-center text-xs font-bold text-black">11 ปี<br>(นักเรียนหญิงชั้น ป.5)</td>
+                  <td class="text-center text-xs font-bold text-black">11 ปี<br>(นร.หญิง ป.5)</td>
                   <td>
                     <div class="vax-input-group"><span class="text-[10px] font-bold text-black text-center mb-1">ครั้งที่ 1</span><input type="date" id="f-vhpv1" class="vax-input"><input type="text" id="f-vhpv1-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vhpv1-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
@@ -567,13 +569,12 @@
                   <td class="bg-blue-100/50"></td>
                 </tr>
                 <tr>
-                  <td class="font-bold text-black">ฉีดวัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก (dT)</td>
-                  <td class="text-center text-xs font-bold text-black">12 ปี (ชั้น ป.6)</td>
+                  <td class="font-bold text-black">ฉีดวัคซีนคอตีบ-บาดทะยัก (dT)</td>
+                  <td class="text-center text-xs font-bold text-black">12 ปี (ป.6)</td>
                   <td>
                     <div class="vax-input-group"><input type="date" id="f-vdt" class="vax-input"><input type="text" id="f-vdt-p" class="vax-input" placeholder="ผู้ฉีด"><input type="text" id="f-vdt-l" class="vax-input" placeholder="สถานที่"></div>
                   </td>
-                  <td class="bg-blue-100/50"></td>
-                  <td class="bg-blue-100/50"></td>
+                  <td class="bg-blue-100/50"></td><td class="bg-blue-100/50"></td>
                 </tr>
                 <tr>
                   <td class="font-bold text-black">ฉีดวัคซีนไข้หวัดใหญ่ ประจำปี</td>
@@ -643,7 +644,8 @@
             </div>
           </div>
 
-          <div class="lg:col-span-2">
+          <div class="lg:col-span-2 space-y-6">
+            
             <div class="rounded-xl border border-blue-200 bg-white shadow-md shadow-gray-400/50 overflow-hidden">
               <div class="bg-blue-600 p-4 border-b border-blue-700 flex items-center gap-2">
                  <i data-lucide="calendar-clock" class="text-white" style="width:24px;height:24px;"></i>
@@ -705,32 +707,10 @@
                     </tbody>
                  </table>
               </div>
-              
-              <div class="p-5 bg-white border-t border-blue-200">
-                <h4 class="font-black text-black mb-3 flex items-center gap-2"><i data-lucide="syringe" style="width:20px;height:20px;" class="text-emerald-600"></i> วัคซีนทางเลือกและวัคซีนแนะนำเพิ่มเติม</h4>
-                <div class="grid sm:grid-cols-2 gap-4">
-                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                      <strong class="text-black block mb-1">ไข้หวัดใหญ่ (Influenza)</strong>
-                      <span class="text-sm font-bold text-slate-600">แนะนำให้ฉีดปีละ 1 เข็ม (เด็กอายุต่ำกว่า 9 ปี รับครั้งแรกให้ 2 เข็ม ห่างกัน 1 เดือน)</span>
-                   </div>
-                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                      <strong class="text-black block mb-1">ไข้เลือดออก (Dengue)</strong>
-                      <span class="text-sm font-bold text-slate-600">อายุ 4 ปีขึ้นไป ฉีด 2 เข็ม ห่างกัน 3 เดือน (พิจารณาฉีดในกลุ่มเสี่ยง)</span>
-                   </div>
-                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                      <strong class="text-black block mb-1">อีสุกอีใส (VZV)</strong>
-                      <span class="text-sm font-bold text-slate-600">เข็มแรกอายุ 12-18 เดือน, เข็มที่ 2 อายุ 4-6 ปี</span>
-                   </div>
-                   <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                      <strong class="text-black block mb-1">อาร์เอสวี (RSV)</strong>
-                      <span class="text-sm font-bold text-slate-600">แนะนำฉีดในหญิงตั้งครรภ์ หรือ ภูมิคุ้มกันสำเร็จรูป (Nirsevimab) ในเด็กอายุน้อยกว่า 8 เดือน (เฉพาะฤดูกาลระบาด)</span>
-                   </div>
-                </div>
-              </div>
             </div>
 
-            <!-- ส่วนที่เพิ่มใหม่: ข้อควรรู้และข้อควรระวัง -->
-            <div class="rounded-xl border border-amber-200 bg-white shadow-md shadow-gray-400/50 mt-6 overflow-hidden">
+            <!-- ข้อควรรู้และข้อควรระวัง -->
+            <div class="rounded-xl border border-amber-200 bg-white shadow-md shadow-gray-400/50 overflow-hidden">
               <div class="bg-amber-500 p-4 border-b border-amber-600 flex items-center gap-2">
                  <i data-lucide="alert-circle" class="text-white" style="width:24px;height:24px;"></i>
                  <h3 class="font-black text-white text-lg">ข้อควรรู้และข้อควรระวัง ในการรับวัคซีน</h3>
@@ -742,7 +722,7 @@
                        <li>หากเด็กไม่สบายเล็กน้อย เช่น มีน้ำมูก ไอ (ไม่มีไข้) <span class="text-emerald-600">สามารถรับวัคซีนได้</span></li>
                        <li>หาก <span class="text-rose-600">มีไข้สูง</span> หรือเจ็บป่วยรุนแรง ควรเลื่อนการรับวัคซีนออกไปก่อน</li>
                        <li>ต้องแจ้งเจ้าหน้าที่ทุกครั้ง หากเด็กเคยมีประวัติ <span class="text-rose-600">แพ้วัคซีน แพ้ยา แพ้ไข่ไก่ หรือแพ้ยีสต์</span> รุนแรง</li>
-                       <li>ผู้ที่มีภาวะภูมิคุ้มกันบกพร่อง รบยากดภูมิ หรือหญิงตั้งครรภ์ <span class="text-rose-600">ห้ามรับวัคซีนชนิดเชื้อเป็น</span> (เช่น หัดฯ, เจอี, สุกใส)</li>
+                       <li>ผู้ที่มีภาวะภูมิคุ้มกันบกพร่อง รับยากดภูมิ หรือหญิงตั้งครรภ์ <span class="text-rose-600">ห้ามรับวัคซีนชนิดเชื้อเป็น</span> (เช่น หัดฯ, เจอี, สุกใส)</li>
                     </ul>
                  </div>
                  <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
@@ -751,14 +731,14 @@
                        <li>ให้นั่งพักสังเกตอาการ ณ สถานพยาบาล <span class="text-rose-600">อย่างน้อย 30 นาที</span></li>
                        <li>หากมีอาการปวด บวม แดง บริเวณที่ฉีด ให้ <span class="text-blue-600">ประคบเย็น</span></li>
                        <li>หากมีไข้ สามารถเช็ดตัวด้วยน้ำอุ่น และให้กินยาลดไข้ (พาราเซตามอล) ตามน้ำหนักตัว</li>
-                       <li>หากมีอาการแพ้รุนแรง (ผื่นลมพิษ, หายใจลำบาก, ปากบวม, หน้าบวม) ให้ <span class="text-rose-600">รีบพบแพทย์ทันที หรือโทร 1669</span></li>
+                       <li>หากมีอาการแพ้รุนแรง (ผื่นลมพิษ, หายใจลำบาก, ปากบวม) ให้ <span class="text-rose-600">รีบพบแพทย์ทันที หรือโทร 1669</span></li>
                     </ul>
                  </div>
               </div>
             </div>
 
-            <!-- ส่วนที่เพิ่มใหม่: ตารางรายละเอียดเชิงลึก (วิธีให้/ปริมาณ) -->
-            <div class="rounded-xl border border-blue-200 bg-white shadow-md shadow-gray-400/50 mt-6 overflow-hidden">
+            <!-- ตารางรายละเอียดเชิงลึก -->
+            <div class="rounded-xl border border-blue-200 bg-white shadow-md shadow-gray-400/50 overflow-hidden">
               <div class="bg-blue-800 p-4 border-b border-blue-900 flex items-center gap-2">
                  <i data-lucide="syringe" class="text-white" style="width:24px;height:24px;"></i>
                  <h3 class="font-black text-white text-lg">รายละเอียดการให้วัคซีน (ปริมาณ, วิธีให้, ระยะห่าง)</h3>
@@ -808,7 +788,7 @@
                           <td class="p-3 font-bold text-black border-r border-blue-100">โรต้า (Rota)</td>
                           <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">1.5 - 2 มล.<br><span class="text-[10px] text-slate-500">(ตามยี่ห้อ)</span></td>
                           <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs">หยอดเข้าปาก (PO)</span></td>
-                          <td class="p-3 font-bold text-slate-700">2-3 ครั้ง ห่างกันอย่างน้อย 4 สัปดาห์ (ต้องเสร็จก่อนอายุ 8 เดือน)</td>
+                          <td class="p-3 font-bold text-slate-700">2-3 ครั้ง ห่างกันอย่างน้อย 4 สัปดาห์ (เสร็จก่อน 8 เดือน)</td>
                        </tr>
                        <tr class="hover:bg-blue-50 transition-colors">
                           <td class="p-3 font-bold text-black border-r border-blue-100">หัด-คางทูม-หัดเยอรมัน (MMR)</td>
@@ -817,7 +797,7 @@
                           <td class="p-3 font-bold text-slate-700">2 เข็ม (อายุ 9 เดือน และ 1.5 ปี)</td>
                        </tr>
                        <tr class="hover:bg-blue-50 transition-colors bg-slate-50/50">
-                          <td class="p-3 font-bold text-black border-r border-blue-100">ไข้สมองอักเสบเจอี เชื้อเป็น (LAJE)</td>
+                          <td class="p-3 font-bold text-black border-r border-blue-100">ไข้สมองอักเสบเจอี (LAJE)</td>
                           <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
                           <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">ฉีดใต้ผิวหนัง (SC)</span><br>ต้นแขน</td>
                           <td class="p-3 font-bold text-slate-700">2 เข็ม ห่างกัน 12-24 เดือน (อายุ 1 ปี และ 2.5 ปี)</td>
@@ -832,13 +812,14 @@
                           <td class="p-3 font-bold text-black border-r border-blue-100">ไข้หวัดใหญ่ (Flu)</td>
                           <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100">0.5 มล.</td>
                           <td class="p-3 font-bold text-slate-700 text-center border-r border-blue-100"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">ฉีดเข้ากล้ามเนื้อ (IM)</span><br>ต้นแขน</td>
-                          <td class="p-3 font-bold text-slate-700">เด็ก &lt; 9 ปี รับครั้งแรกฉีด 2 เข็ม ห่าง 1 ด., หลังจากนั้นฉีดปีละ 1 เข็ม</td>
+                          <td class="p-3 font-bold text-slate-700">เด็ก &lt; 9 ปี เข็มแรกฉีด 2 เข็ม ห่าง 1 ด., ถัดไปปีละ 1 เข็ม</td>
                        </tr>
                     </tbody>
                  </table>
               </div>
             </div>
-            
+
+            <!-- ไฟล์ PDF -->
             <div class="grid sm:grid-cols-2 gap-4 mt-6">
               <a href="การสร้างเสริมภูมิคุ้มกัน ตลอดชีวิต 2569.pdf" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 bg-white text-blue-800 hover:bg-blue-50 p-4 rounded-xl transition-transform transform hover:-translate-y-1 shadow-md border border-blue-200 group">
                 <div class="bg-rose-100 p-3 rounded-lg group-hover:bg-rose-200 transition-colors"><i data-lucide="file-text" class="w-8 h-8 text-rose-600"></i></div>
@@ -885,15 +866,19 @@
 
   <!-- Forecast Modal (หน้าต่างวางแผนติดตามวัคซีน) -->
   <div id="forecast-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md border-2 border-amber-400 shadow-2xl fade-in overflow-hidden">
-      <div class="bg-amber-100 p-4 border-b border-amber-200 flex items-center gap-3">
-        <i data-lucide="calendar-clock" class="text-amber-600"></i>
-        <h2 class="font-black text-lg text-amber-900">วางแผนติดตามวัคซีน (รายเดือน)</h2>
+    <div class="bg-white rounded-2xl w-full max-w-5xl border-2 border-amber-400 shadow-2xl fade-in flex flex-col max-h-[90vh]">
+      <div class="bg-amber-100 p-4 border-b border-amber-200 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-3">
+          <i data-lucide="calendar-clock" class="text-amber-600"></i>
+          <h2 class="font-black text-lg text-amber-900">วางแผนติดตามวัคซีน (รายเดือน)</h2>
+        </div>
+        <button type="button" id="close-forecast-x-btn" class="p-1.5 rounded-lg hover:bg-amber-200 transition-colors text-amber-800 border border-transparent"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
       </div>
-      <div class="p-5 space-y-4">
-        <p class="text-sm font-bold text-slate-600">เลือกระบุเดือนและปีที่ต้องการดูแผนการนัดหมายฉีดวัคซีน ระบบจะส่งออกเป็นไฟล์ Excel</p>
+      
+      <div class="p-5 flex-1 overflow-y-auto">
+        <p class="text-sm font-bold text-slate-600 mb-4">เลือกระบุเดือนและปีที่ต้องการดูแผนการนัดหมายฉีดวัคซีน เพื่อดูตัวอย่างและส่งออกเป็นไฟล์ Excel</p>
         
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid sm:grid-cols-3 gap-4 mb-4">
           <div>
             <label class="block text-xs font-bold mb-1 text-black">เดือนเป้าหมาย</label>
             <select id="fc-month" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm">
@@ -909,22 +894,36 @@
             <label class="block text-xs font-bold mb-1 text-black">ปี พ.ศ.</label>
             <select id="fc-year" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm"></select>
           </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold mb-1 text-black">กรองตามโรงเรียน</label>
-          <select id="fc-school" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm"></select>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-black">กรองตามโรงเรียน</label>
+            <select id="fc-school" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-sm"></select>
+          </div>
         </div>
         
-        <label class="flex items-center gap-2 mt-2 cursor-pointer bg-slate-50 p-2 rounded-lg border border-slate-200">
-          <input type="checkbox" id="fc-include-missing" checked class="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500">
-          <span class="text-xs font-bold text-rose-600">รวมเด็กที่ "ขาดนัด/ล่าช้า" สะสมมาถึงเดือนนี้ด้วย</span>
-        </label>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4">
+          <label class="flex items-center gap-2 cursor-pointer w-full sm:w-auto">
+            <input type="checkbox" id="fc-include-missing" checked class="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500">
+            <span class="text-sm font-bold text-rose-600">รวมเด็กที่ "ขาดนัด/ล่าช้า" สะสมมาถึงเดือนนี้ด้วย</span>
+          </label>
+          <button type="button" id="btn-preview-forecast" class="w-full sm:w-auto px-5 py-2 rounded-lg font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 shadow-sm"><i data-lucide="search" style="width:16px;height:16px;"></i> ค้นหา / ดูตัวอย่าง</button>
+        </div>
 
+        <!-- กล่องแสดงตัวอย่างตารางก่อน Export -->
+        <div id="forecast-preview-container" class="bg-white rounded-lg border border-slate-200 min-h-[150px] max-h-[40vh] overflow-y-auto shadow-inner">
+          <div class="text-center py-10 text-slate-400 font-bold">
+            <i data-lucide="table" class="mx-auto mb-3 opacity-50" style="width:48px;height:48px;"></i>
+            ระบุเงื่อนไขด้านบน แล้วกด "ค้นหา / ดูตัวอย่าง"
+          </div>
+        </div>
+        
+        <div class="mt-2 text-right">
+          <span id="forecast-summary-text" class="text-xs font-bold text-emerald-600"></span>
+        </div>
       </div>
-      <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
-        <button type="button" id="close-forecast-btn" class="px-4 py-2 rounded-lg font-bold text-sm bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">ยกเลิก</button>
-        <button type="button" id="btn-execute-forecast" class="px-4 py-2 rounded-lg font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-2 shadow-sm"><i data-lucide="download" style="width:16px;height:16px;"></i> ส่งออกแผนการนัด (Excel)</button>
+
+      <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2 shrink-0">
+        <button type="button" id="close-forecast-btn" class="px-4 py-2 rounded-lg font-bold text-sm bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">ปิดหน้าต่าง</button>
+        <button type="button" id="btn-execute-forecast" class="hidden px-5 py-2 rounded-lg font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 shadow-sm"><i data-lucide="file-spreadsheet" style="width:16px;height:16px;"></i> ส่งออกแผนการนัด (Excel)</button>
       </div>
     </div>
   </div>
@@ -1015,6 +1014,7 @@
     'f-notes':'notes','f-vresult':'vaccine_result','f-vother':'vaccine_other',
     'f-image-base64':'profile_image',
     
+    // Mapping วัคซีน
     'f-vbcg':'vaccine_bcg_date', 'f-vbcg-p':'vaccine_bcg_provider', 'f-vbcg-l':'vaccine_bcg_location',
     'f-vhb1':'vaccine_hepb_1_date', 'f-vhb1-p':'vaccine_hepb_1_provider', 'f-vhb1-l':'vaccine_hepb_1_location',
     'f-vhb2':'vaccine_hepb_2_date', 'f-vhb2-p':'vaccine_hepb_2_provider', 'f-vhb2-l':'vaccine_hepb_2_location',
@@ -1289,7 +1289,7 @@
     const vc = document.getElementById('vaccine-chart');
     vc.innerHTML = vaccineFields.map(v => {
       const count = d.filter(s=>s[v.key]).length, pct = total?Math.round(count/total*100):0;
-      const color = pct>=80?'#059669':pct>=50?'#d97706':'#e11d48'; // Emerald, Amber, Rose
+      const color = pct>=80?'#059669':pct>=50?'#d97706':'#e11d48'; 
       return `
       <div class="flex items-center justify-between p-3 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors rounded">
          <div class="w-1/3 text-xs font-bold text-slate-700 truncate pr-2" title="${v.label}">${v.label}</div>
@@ -1420,31 +1420,15 @@
   // === ฟังก์ชันดาวน์โหลด Template Excel สำหรับนำเข้า ===
   document.getElementById('btn-download-template').addEventListener('click', function() {
     if (typeof XLSX === 'undefined') { showError('ไลบรารี Excel ยังไม่พร้อม'); return; }
-    
-    // สร้าง 1 แถวตัวอย่าง เพื่อให้เห็นรูปแบบ
     const templateData = [{
-      'ชื่อ-นามสกุล': 'ด.ช. ตัวอย่าง เรียนดี',
-      'ชื่อเล่น': 'น้องเทส',
-      'เลขบัตรประชาชน': '1234567890123',
-      'วันเกิด (YYYY-MM-DD)': '2015-05-20',
-      'เพศ (ชาย/หญิง)': 'ชาย',
-      'หมู่เลือด': 'O',
-      'โรงเรียน': 'รร.ราชประชาฯ 30',
-      'ระดับชั้น/ห้องเรียน': 'ป.1/1',
-      'รหัสโรงพยาบาล (HN)': 'HN123456',
-      'น้ำหนัก (กก.)': '25.5',
-      'ส่วนสูง (ซม.)': '120',
-      'บ้านเลขที่': '123/4',
-      'หมู่ที่': '5',
-      'ตำบล': 'มะลิกา',
-      'อำเภอ': 'แม่อาย',
-      'จังหวัด': 'เชียงใหม่',
-      'ชื่อผู้ปกครอง': 'นาย ทดสอบ เรียนดี',
-      'เบอร์โทรผู้ปกครอง': '0812345678'
+      'ชื่อ-นามสกุล': 'ด.ช. ตัวอย่าง เรียนดี', 'ชื่อเล่น': 'น้องเทส', 'เลขบัตรประชาชน': '1234567890123',
+      'วันเกิด (YYYY-MM-DD)': '2015-05-20', 'เพศ (ชาย/หญิง)': 'ชาย', 'หมู่เลือด': 'O',
+      'โรงเรียน': 'รร.ราชประชาฯ 30', 'ระดับชั้น/ห้องเรียน': 'ป.1/1', 'รหัสโรงพยาบาล (HN)': 'HN123456',
+      'น้ำหนัก (กก.)': '25.5', 'ส่วนสูง (ซม.)': '120', 'บ้านเลขที่': '123/4', 'หมู่ที่': '5',
+      'ตำบล': 'มะลิกา', 'อำเภอ': 'แม่อาย', 'จังหวัด': 'เชียงใหม่',
+      'ชื่อผู้ปกครอง': 'นาย ทดสอบ เรียนดี', 'เบอร์โทรผู้ปกครอง': '0812345678'
     }];
-    
     const ws = XLSX.utils.json_to_sheet(templateData);
-    // ปรับความกว้างคอลัมน์ให้สวยงาม
     ws['!cols'] = Object.keys(templateData[0]).map(() => ({ wch: 20 }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Template');
@@ -1455,7 +1439,6 @@
   document.getElementById('file-import-excel').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
-    
     if (typeof XLSX === 'undefined') { showError('ไลบรารี Excel ยังไม่พร้อม'); return; }
 
     const reader = new FileReader();
@@ -1465,66 +1448,38 @@
         const workbook = XLSX.read(data, {type: 'array'});
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        
-        // แปลงเป็น JSON
         const rawData = XLSX.utils.sheet_to_json(worksheet, {raw: false});
         
-        if (rawData.length === 0) {
-           alert('ไม่พบข้อมูลในไฟล์ Excel');
-           return;
-        }
+        if (rawData.length === 0) { alert('ไม่พบข้อมูลในไฟล์ Excel'); return; }
 
-        // เปิด Modal แจ้งเตือนความคืบหน้า
         const progressModal = document.getElementById('import-progress-modal');
         const progressBar = document.getElementById('import-progress-bar');
         const progressText = document.getElementById('import-status-text');
         progressModal.classList.remove('hidden');
         
-        let successCount = 0;
-        let failCount = 0;
+        let successCount = 0; let failCount = 0;
 
-        // วนลูปบันทึกข้อมูลทีละรายการ
         for (let i = 0; i < rawData.length; i++) {
            const row = rawData[i];
            const newStudent = {};
-           
-           // แปลงข้อมูลตาม Map
            for (const [thaiKey, enKey] of Object.entries(importMap)) {
-              if (row[thaiKey] !== undefined) {
-                 newStudent[enKey] = row[thaiKey];
-              }
+              if (row[thaiKey] !== undefined) newStudent[enKey] = row[thaiKey];
            }
            
-           // ตรวจสอบข้อมูลจำเป็น
-           if (!newStudent.full_name) {
-              failCount++;
-              continue; // ข้ามแถวที่ไม่มีชื่อ
-           }
-
+           if (!newStudent.full_name) { failCount++; continue; }
            newStudent.created_at = new Date().toISOString();
            
-           // บันทึกผ่าน SDK
            const result = await window.dataSdk.create(newStudent);
-           if (result.isOk) {
-              successCount++;
-           } else {
-              failCount++;
-           }
+           if (result.isOk) { successCount++; } else { failCount++; }
 
-           // อัปเดต Progress Bar
            const percent = Math.round(((i + 1) / rawData.length) * 100);
            progressBar.style.width = percent + '%';
            progressText.textContent = `${i + 1} / ${rawData.length} รายการ`;
         }
 
-        // เสร็จสิ้น
         progressModal.classList.add('hidden');
-        document.getElementById('file-import-excel').value = ''; // รีเซ็ต input
-        
-        // แจ้งเตือนผลลัพธ์
+        document.getElementById('file-import-excel').value = ''; 
         alert(`นำเข้าข้อมูลเสร็จสิ้น!\nสำเร็จ: ${successCount} รายการ\nล้มเหลว/ข้าม: ${failCount} รายการ`);
-        
-        // รีเฟรชหน้าจอ (ถ้าจำเป็น)
         if(window.dataSdk._fetchData) await window.dataSdk._fetchData();
 
       } catch (err) {
@@ -1574,7 +1529,6 @@
     } catch (err) { showError('ไม่สามารถส่งออก Excel ได้: ' + (err.message || 'ข้อผิดพลาดที่ไม่ทราบ')); }
   }
 
-  // ผูก Event ปุ่มส่งออก
   document.getElementById('export-excel-filtered-btn').addEventListener('click', () => exportToExcel(currentFilteredStudents, 'vaccine_filtered'));
   document.getElementById('export-excel-all-btn').addEventListener('click', () => exportToExcel(allStudents, 'vaccine_all_students'));
 
@@ -1582,7 +1536,7 @@
   const forecastModal = document.getElementById('forecast-modal');
   const fcYearSelect = document.getElementById('fc-year');
   const fcSchoolSelect = document.getElementById('fc-school');
-  let currentForecastRows = []; // เก็บข้อมูลตาราง
+  let currentForecastRows = []; 
   
   document.getElementById('open-forecast-btn').addEventListener('click', () => {
     const currentYear = new Date().getFullYear();
@@ -1592,7 +1546,6 @@
     const schools = [...new Set(allStudents.map(s=>s.school).filter(Boolean))].sort();
     fcSchoolSelect.innerHTML = '<option value="">-- ทุกโรงเรียน --</option>' + schools.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');
     
-    // เคลียร์หน้าจอตัวอย่างทุกครั้งที่เปิดใหม่
     document.getElementById('forecast-preview-container').innerHTML = `<div class="text-center py-10 text-slate-400 font-bold"><i data-lucide="table" class="mx-auto mb-3 opacity-50" style="width:48px;height:48px;"></i>ระบุเงื่อนไขด้านบน แล้วกด "ค้นหา / ดูตัวอย่าง"</div>`;
     document.getElementById('btn-execute-forecast').classList.add('hidden');
     document.getElementById('forecast-summary-text').textContent = '';
@@ -1602,8 +1555,8 @@
   });
 
   document.getElementById('close-forecast-btn').addEventListener('click', () => forecastModal.classList.add('hidden'));
+  document.getElementById('close-forecast-x-btn').addEventListener('click', () => forecastModal.classList.add('hidden'));
 
-  // ฟังก์ชันค้นหาและสร้างตารางดูตัวอย่าง (Preview)
   document.getElementById('btn-preview-forecast').addEventListener('click', () => {
     const targetMonth = parseInt(document.getElementById('fc-month').value);
     const targetYear = parseInt(document.getElementById('fc-year').value);
@@ -1621,22 +1574,18 @@
       const sAge = s.date_of_birth ? calcAge(s.date_of_birth) : '-';
       const parentPhone = s.guardian_phone || s.mother_phone || s.father_phone || '-';
 
-      // เช็คคิวฉีดล่วงหน้า (Upcoming)
       analysis.upcoming.forEach(v => {
         const tDate = new Date(v.targetDate);
         if (tDate.getMonth() === targetMonth && tDate.getFullYear() === targetYear) {
           currentForecastRows.push({
             'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
             'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ติดต่อ': parentPhone,
-            'วัคซีนที่ต้องฉีด': v.label,
-            'วันที่ครบกำหนดฉีด': formatDate(tDate),
-            'สถานะ': 'ตามกำหนดนัด',
+            'วัคซีนที่ต้องฉีด': v.label, 'วันที่ครบกำหนดฉีด': formatDate(tDate), 'สถานะ': 'ตามกำหนดนัด',
             '_statusClass': 'text-emerald-600 bg-emerald-50 border-emerald-200'
           });
         }
       });
 
-      // เช็ควัคซีนที่ขาด/ล่าช้า (Missing)
       if (includeMissing) {
         analysis.missing.forEach(v => {
           const tDate = new Date(v.targetDate);
@@ -1644,9 +1593,7 @@
             currentForecastRows.push({
               'โรงเรียน': s.school || '-', 'ระดับชั้น': s.class_room || '-',
               'ชื่อ-นามสกุล': s.full_name, 'อายุ(ปี)': sAge, 'เบอร์ติดต่อ': parentPhone,
-              'วัคซีนที่ต้องฉีด': v.label,
-              'วันที่ครบกำหนดฉีด': formatDate(tDate),
-              'สถานะ': `ล่าช้า (${v.daysLate} วัน)`,
+              'วัคซีนที่ต้องฉีด': v.label, 'วันที่ครบกำหนดฉีด': formatDate(tDate), 'สถานะ': `ล่าช้า (${v.daysLate} วัน)`,
               '_statusClass': 'text-rose-600 bg-rose-50 border-rose-200'
             });
           }
@@ -1657,7 +1604,6 @@
     renderForecastPreview();
   });
 
-  // ฟังก์ชันวาดตารางแสดงผลใน Modal
   function renderForecastPreview() {
     const container = document.getElementById('forecast-preview-container');
     const exportBtn = document.getElementById('btn-execute-forecast');
@@ -1685,19 +1631,11 @@
     
     currentForecastRows.forEach(row => {
       html += `<tr class="border-b border-black hover:bg-slate-50 transition-colors">
-        <td class="p-2 border-r border-black align-top">
-           <span class="font-bold text-slate-800">${esc(row['โรงเรียน'])}</span><br>
-           <span class="text-[11px] text-slate-500">ชั้น: ${esc(row['ระดับชั้น'])}</span>
-        </td>
-        <td class="p-2 border-r border-black align-top font-bold text-black">
-           ${esc(row['ชื่อ-นามสกุล'])}
-           <div class="text-[11px] text-slate-500 font-normal flex items-center gap-1 mt-0.5"><i data-lucide="phone" style="width:12px;height:12px;"></i> ${esc(row['เบอร์ติดต่อ'])}</div>
-        </td>
+        <td class="p-2 border-r border-black align-top"><span class="font-bold text-slate-800">${esc(row['โรงเรียน'])}</span><br><span class="text-[11px] text-slate-500">ชั้น: ${esc(row['ระดับชั้น'])}</span></td>
+        <td class="p-2 border-r border-black align-top font-bold text-black">${esc(row['ชื่อ-นามสกุล'])}<div class="text-[11px] text-slate-500 font-normal flex items-center gap-1 mt-0.5"><i data-lucide="phone" style="width:12px;height:12px;"></i> ${esc(row['เบอร์ติดต่อ'])}</div></td>
         <td class="p-2 border-r border-black align-top font-black text-blue-700">${esc(row['วัคซีนที่ต้องฉีด'])}</td>
         <td class="p-2 border-r border-black align-top text-center font-bold text-black whitespace-nowrap">${esc(row['วันที่ครบกำหนดฉีด'])}</td>
-        <td class="p-2 align-top text-center">
-           <span class="inline-block px-2 py-1 rounded border font-bold text-[11px] ${row._statusClass || ''}">${esc(row['สถานะ'])}</span>
-        </td>
+        <td class="p-2 align-top text-center"><span class="inline-block px-2 py-1 rounded border font-bold text-[11px] ${row._statusClass || ''}">${esc(row['สถานะ'])}</span></td>
       </tr>`;
     });
 
@@ -1708,31 +1646,18 @@
     lucide.createIcons({root: container});
   }
 
-  // กดส่งออกเฉพาะข้อมูลที่ถูกสร้างในตาราง Preview
   document.getElementById('btn-execute-forecast').addEventListener('click', () => {
     try {
-      // คัดลอกข้อมูลและลบฟิลด์ _statusClass ออกก่อน Export
-      const exportData = currentForecastRows.map(row => {
-        const { _statusClass, ...cleanRow } = row;
-        return cleanRow;
-      });
-
+      const exportData = currentForecastRows.map(row => { const { _statusClass, ...cleanRow } = row; return cleanRow; });
       const ws = XLSX.utils.json_to_sheet(exportData); 
-      
-      // ปรับขนาดความกว้างคอลัมน์ให้สวยงาม
       ws['!cols'] = [{wch: 20}, {wch: 10}, {wch: 25}, {wch: 10}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 20}];
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'แผนติดตามวัคซีน');
-      
       const targetMonth = parseInt(document.getElementById('fc-month').value);
       const targetYear = parseInt(document.getElementById('fc-year').value);
       const filename = `Vaccine_Plan_${targetYear}_${targetMonth+1}.xlsx`;
-      
       XLSX.writeFile(wb, filename); 
-    } catch (err) { 
-      showError('ไม่สามารถส่งออก Excel ได้'); 
-    }
+    } catch (err) { showError('ไม่สามารถส่งออก Excel ได้'); }
   });
 
   function getVaxCellDisplay(s, baseKey) {
