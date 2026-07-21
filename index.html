@@ -74,7 +74,7 @@
         setTimeout(() => handler.onDataChanged(this._data), 100);
       },
       _mockCreate: async function(data) {
-        data.__backendId = Date.now().toString();
+        data.__backendId = Date.now().toString() + Math.floor(Math.random()*1000);
         this._data.push(data);
         this._saveMock();
         return { isOk: true };
@@ -133,7 +133,7 @@
 </head>
 <body class="min-h-screen">
 
-  <!-- ================= หน้าต่าง Login (ล็อกอินเข้าสู่ระบบ) ================= -->
+  <!-- ================= หน้าต่าง Login ================= -->
   <div id="login-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-50/90 backdrop-blur-sm transition-opacity duration-300">
     <div class="bg-white p-8 rounded-2xl shadow-2xl border-2 border-blue-200 w-full max-w-sm mx-4 transform transition-transform">
       <div class="text-center mb-6">
@@ -160,7 +160,7 @@
         </button>
       </form>
       <div class="mt-6 text-center text-xs font-bold text-slate-400">
-        โรงพยาบาลแม่อาย (v1.4.4)
+        โรงพยาบาลแม่อาย (v1.4.6)
       </div>
     </div>
   </div>
@@ -173,7 +173,7 @@
           <i data-lucide="shield-plus"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.4</span></h1>
+          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.6</span></h1>
           <p class="text-xs font-bold text-black">อนามัยโรงเรียน รพ.แม่อาย</p>
         </div>
       </div>
@@ -262,7 +262,7 @@
       <div class="rounded-xl p-5 border border-blue-200 shadow-md shadow-gray-400/50 mt-4 bg-blue-50">
         <h3 class="font-bold text-black mb-4 flex items-center gap-2"><i data-lucide="school" style="width:20px;height:20px;" class="text-blue-600"></i> สถิติจำนวนนักเรียนแยกตามโรงเรียนและระดับชั้น</h3>
         <div id="school-class-table-container" class="overflow-x-auto bg-white rounded-lg border-2 border-black">
-          <!-- ตารางถูกสร้างผ่าน JS -->
+          <!-- ตารางจะถูกสร้างผ่าน JS -->
         </div>
       </div>
       
@@ -603,9 +603,16 @@
         </fieldset>
         
         <fieldset class="rounded-xl p-5 border border-blue-200 bg-blue-50 shadow-md shadow-gray-400/50">
-          <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">หมายเหตุเพิ่มเติม</legend>
+          <legend class="font-black px-3 text-white bg-blue-600 rounded-md py-1 border border-blue-700 text-sm shadow-sm">หมายเหตุ และรูปถ่ายประวัติวัคซีน</legend>
           <div class="mt-2">
-            <textarea id="f-notes" rows="3" placeholder="บันทึกข้อความเพิ่มเติม อาการแพ้ยา หรือสิ่งผิดปกติ..." class="w-full border-blue-300"></textarea>
+            <label for="f-notes" class="block text-xs font-bold mb-1 text-black">บันทึกข้อความเพิ่มเติม อาการแพ้ยา หรือสิ่งผิดปกติ</label>
+            <textarea id="f-notes" rows="3" placeholder="..." class="w-full border-blue-300"></textarea>
+          </div>
+          <div class="mt-4 border-t border-blue-200 pt-4">
+             <label class="block text-xs font-bold mb-1 text-black">แนบรูปถ่ายประวัติวัคซีน (สมุดสีชมพู / ใบรับรอง) สูงสุด 5 รูป</label>
+             <input type="file" id="f-history-images" multiple accept="image/*" class="text-xs text-black file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-blue-600 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+             <p class="text-[10px] font-medium text-slate-500 mt-1">ระบบจะย่อขนาดภาพให้อัตโนมัติ (สามารถเลือกได้หลายรูปพร้อมกัน)</p>
+             <div id="history-images-preview" class="flex flex-wrap gap-3 mt-3"></div>
           </div>
         </fieldset>
 
@@ -949,6 +956,7 @@
   let currentFilteredStudents = []; 
   let editingRecord = null;
   let deleteConfirmationPending = null;
+  let currentHistoryImages = []; // ตัวแปรเก็บรูปประวัติวัคซีน
 
   // จัดการการล็อกอิน
   const loginOverlay = document.getElementById('login-overlay');
@@ -1165,32 +1173,88 @@
     return { missing, upcoming, received, blocked, isComplete: missing.length === 0, noDob: false };
   }
 
-  // จัดการอัปโหลดและบีบอัดรูปภาพโปรไฟล์
-  document.getElementById('f-image-file').addEventListener('change', function(e) {
+  // ฟังก์ชันย่อขนาดภาพ (บีบอัดให้เล็กลง)
+  function compressImage(file, maxSize, quality) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width, height = img.height;
+          if (width > height) { if (width > maxSize) { height *= maxSize / width; width = maxSize; } } 
+          else { if (height > maxSize) { width *= maxSize / height; height = maxSize; } }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // บีบอัดให้อยู่ในขอบเขต 50,000 ตัวอักษร เพื่อให้บันทึกลง Google Sheets ได้
+          let currentQuality = quality;
+          let dataUrl = canvas.toDataURL('image/jpeg', currentQuality);
+          while (dataUrl.length > 45000 && currentQuality > 0.1) {
+              currentQuality -= 0.1;
+              dataUrl = canvas.toDataURL('image/jpeg', currentQuality);
+          }
+          resolve(dataUrl);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // จัดการอัปโหลดรูปภาพโปรไฟล์ (ย่อเหลือ 150px)
+  document.getElementById('f-image-file').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 150; const MAX_HEIGHT = 150;
-        let width = img.width, height = img.height;
-        if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
-        else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        document.getElementById('f-image-base64').value = dataUrl;
-        document.getElementById('img-preview').src = dataUrl;
-        document.getElementById('img-preview').classList.remove('hidden');
-        document.getElementById('img-placeholder-icon').classList.add('hidden');
-      }
-      img.src = event.target.result;
-    }
-    reader.readAsDataURL(file);
+    const dataUrl = await compressImage(file, 150, 0.7);
+    document.getElementById('f-image-base64').value = dataUrl;
+    document.getElementById('img-preview').src = dataUrl;
+    document.getElementById('img-preview').classList.remove('hidden');
+    document.getElementById('img-placeholder-icon').classList.add('hidden');
   });
+
+  // จัดการอัปโหลดรูปรวมประวัติวัคซีน (ย่อเหลือ 700px เพื่อให้อ่านออก แต่ขนาดไฟล์ไม่เกิน Limit)
+  document.getElementById('f-history-images').addEventListener('change', async function(e) {
+    const files = Array.from(e.target.files);
+    if (currentHistoryImages.length + files.length > 5) {
+      alert('สามารถแนบรูปถ่ายประวัติวัคซีนได้สูงสุด 5 รูปเท่านั้นครับ');
+      e.target.value = '';
+      return;
+    }
+
+    const btn = document.getElementById('f-history-images');
+    btn.disabled = true;
+    
+    for (let file of files) {
+      const base64 = await compressImage(file, 700, 0.5); 
+      currentHistoryImages.push(base64);
+    }
+    
+    renderHistoryImagesPreview();
+    e.target.value = ''; // Reset input
+    btn.disabled = false;
+  });
+
+  function renderHistoryImagesPreview() {
+    const container = document.getElementById('history-images-preview');
+    container.innerHTML = '';
+    currentHistoryImages.forEach((b64, index) => {
+      const div = document.createElement('div');
+      div.className = 'relative w-24 h-24 rounded-lg border-2 border-blue-200 overflow-hidden shadow-sm flex-shrink-0';
+      div.innerHTML = `
+        <img src="${b64}" class="w-full h-full object-cover">
+        <button type="button" class="absolute top-1 right-1 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-rose-700 shadow-md" onclick="window.removeHistoryImage(${index})"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
+      `;
+      container.appendChild(div);
+    });
+    lucide.createIcons({root: container});
+  }
+
+  window.removeHistoryImage = function(index) {
+    currentHistoryImages.splice(index, 1);
+    renderHistoryImagesPreview();
+  };
 
   document.querySelectorAll('[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1613,7 +1677,6 @@
                futureStrArr.push(`${v.label} (${formatDate(tDate)})`);
            }
         });
-        // แสดงแค่ 2 รายการแรกเพื่อไม่ให้รกเกินไป
         let futureStr = futureStrArr.length > 0 ? futureStrArr.slice(0,2).join(', ') + (futureStrArr.length > 2 ? ' ...' : '') : '-';
 
         currentForecastRows.push({
@@ -1623,11 +1686,11 @@
           'อายุ(ปี)': calcAge(s.date_of_birth),
           'เบอร์ติดต่อ': s.guardian_phone || s.mother_phone || s.father_phone || '-',
           'ประวัติฉีดล่าสุด': lastReceivedStr,
-          'วัคซีนเป้าหมาย (เดือนนี้)': targetsThisMonth.join(', '), // สำหรับ Excel ใช้ comma
+          'วัคซีนเป้าหมาย (เดือนนี้)': targetsThisMonth.join(', '), 
           'กำหนดนัดเข็มถัดไป': futureStr,
           'สถานะ': isDelayed ? `ล่าช้า (${maxDelayDays} วัน)` : 'ตามกำหนดนัด',
           '_statusClass': isDelayed ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200',
-          '_targetsHtml': targetsThisMonth.map(t => `<div class="mb-1 ${t.includes('🚨') ? 'text-rose-600 font-bold' : 'text-blue-700 font-bold'}">${t}</div>`).join('') // สำหรับแสดงผล HTML
+          '_targetsHtml': targetsThisMonth.map(t => `<div class="mb-1 ${t.includes('🚨') ? 'text-rose-600 font-bold' : 'text-blue-700 font-bold'}">${t}</div>`).join('') 
         });
       }
     });
@@ -1690,7 +1753,6 @@
         return cleanRow; 
       });
       const ws = XLSX.utils.json_to_sheet(exportData); 
-      // ปรับขนาดความกว้างคอลัมน์ให้เหมาะสมใน Excel
       ws['!cols'] = [{wch: 18}, {wch: 10}, {wch: 25}, {wch: 8}, {wch: 15}, {wch: 25}, {wch: 35}, {wch: 25}, {wch: 15}];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'แผนติดตามวัคซีน');
@@ -1722,7 +1784,6 @@
         ? `<img src="${s.profile_image}" class="w-full h-full object-cover">` 
         : `<div class="w-full h-full flex items-center justify-center text-4xl font-black text-white bg-blue-500">${(s.full_name||'?')[0]}</div>`;
     
-    // สร้างส่วนแสดงผลการวิเคราะห์วัคซีน AI
     const analysis = analyzeVaccines(s);
     let analysisHtml = '';
     
@@ -1814,6 +1875,21 @@
       </div>
     `;
 
+    // ดึงรูปภาพประวัติวัคซีนมาแสดงใน Modal
+    let historyGalleryHtml = '';
+    let imgs = [];
+    for(let i=1; i<=5; i++) {
+       if (s[`vaccine_history_img_${i}`]) imgs.push(s[`vaccine_history_img_${i}`]);
+    }
+    if (imgs.length > 0) {
+       historyGalleryHtml = `
+          <h4 class="font-black text-sm text-blue-700 mb-3 mt-4 flex items-center gap-2"><i data-lucide="image" style="width:16px;height:16px;"></i> รูปถ่ายประวัติวัคซีน (คลิกเพื่อดูรูปใหญ่)</h4>
+          <div class="flex flex-wrap gap-4">
+             ${imgs.map(img => `<a href="${img}" target="_blank" class="block w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden border-2 border-blue-200 shadow-sm hover:opacity-80 transition-opacity"><img src="${img}" class="w-full h-full object-cover"></a>`).join('')}
+          </div>
+       `;
+    }
+
     body.innerHTML=`
       <div class="flex flex-col sm:flex-row gap-6 items-start">
         <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white overflow-hidden flex-shrink-0 border-2 border-black mx-auto sm:mx-0 shadow-md">
@@ -1870,6 +1946,10 @@
           <span class="font-black text-lg text-emerald-700">${s.vaccine_result ? esc(s.vaccine_result) : '-'}</span>
         </div>
       </div>
+      
+      <!-- ส่วนแสดงรูปภาพประวัติวัคซีน -->
+      ${historyGalleryHtml}
+      
       ${s.notes?'<div class="text-sm mt-4 bg-white p-4 rounded-xl border border-blue-200 shadow-sm"><span style="color:#000; display:block; margin-bottom:6px; font-weight:800;">หมายเหตุ:</span> <span class="text-black font-bold">'+esc(s.notes)+'</span></div>':''}`;
 
     lucide.createIcons({root: body});
@@ -1909,6 +1989,15 @@
       document.getElementById('img-preview').classList.add('hidden');
       document.getElementById('img-placeholder-icon').classList.remove('hidden');
     }
+    
+    // โหลดรูปประวัติวัคซีน
+    currentHistoryImages = [];
+    for(let i=1; i<=5; i++) {
+       if (s[`vaccine_history_img_${i}`]) {
+          currentHistoryImages.push(s[`vaccine_history_img_${i}`]);
+       }
+    }
+    renderHistoryImagesPreview();
   }
 
   document.getElementById('cancel-edit-btn').addEventListener('click',()=>{
@@ -1923,6 +2012,9 @@
     document.getElementById('img-preview').src = '';
     document.getElementById('img-preview').classList.add('hidden');
     document.getElementById('img-placeholder-icon').classList.remove('hidden');
+    
+    currentHistoryImages = [];
+    renderHistoryImagesPreview();
   });
 
   document.getElementById('delete-form-btn').addEventListener('click',async function(e){
@@ -1940,6 +2032,9 @@
         document.getElementById('img-preview').src = '';
         document.getElementById('img-preview').classList.add('hidden');
         document.getElementById('img-placeholder-icon').classList.remove('hidden');
+        
+        currentHistoryImages = [];
+        renderHistoryImagesPreview();
 
         switchTab('list');
         showStatus('✓ ลบข้อมูลสำเร็จ');
@@ -1970,7 +2065,13 @@
       limitEl.classList.remove('hidden'); return;
     }
 
-    const data={}; Object.entries(formMap).forEach(([fid,key])=>{data[key]=document.getElementById(fid).value;});
+    const data={}; 
+    Object.entries(formMap).forEach(([fid,key])=>{data[key]=document.getElementById(fid).value;});
+    
+    // โอนรูปประวัติวัคซีนเข้า data 5 คอลัมน์
+    for(let i=0; i<5; i++) {
+       data[`vaccine_history_img_${i+1}`] = currentHistoryImages[i] || '';
+    }
 
     const btn = e.target.querySelector('button[type="submit"]');
     if (btn) { btn.disabled=true; btn.style.opacity='0.6'; status.textContent='กำลังบันทึก...'; }
@@ -1995,6 +2096,9 @@
       document.getElementById('img-preview').src = '';
       document.getElementById('img-preview').classList.add('hidden');
       document.getElementById('img-placeholder-icon').classList.remove('hidden');
+      
+      currentHistoryImages = [];
+      renderHistoryImagesPreview();
 
     } else {
       showError('เกิดข้อผิดพลาด: '+(result.error?.message||'ไม่สามารถบันทึกได้')); status.textContent='';
