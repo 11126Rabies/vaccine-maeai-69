@@ -16,14 +16,14 @@
   
   <!-- ระบบเชื่อมต่อฐานข้อมูล Google Sheets -->
   <script>
-    const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwO9SbM466177Q3b0cEBUuRyi3b5cdw09zImtAGQVj7UN64wjEjCiu2xS1pMWgz9u0s/exec";
+    const GOOGLE_SHEET_WEB_APP_URL = "ใส่_URL_ที่ได้จาก_Google_Apps_Script_ที่นี่";
 
     window.dataSdk = {
       _handler: null,
       init: async function(handler) {
         this._handler = handler;
         if (GOOGLE_SHEET_WEB_APP_URL === 'ใส่_URL_ที่ได้จาก_Google_Apps_Script_ที่นี่') {
-          console.warn("ยังไม่ได้ตั้งค่า GOOGLE_SHEET_WEB_APP_URL ระบบจะใช้ LocalStorage ทดแทนชั่วคราว");
+          console.warn("ยังไม่ได้ตั้งค่า GOOGLE_SHEET_WEB_APP_URL");
           this._useLocalStorageFallback(handler);
           return { isOk: true };
         }
@@ -39,7 +39,7 @@
         const res = await fetch(GOOGLE_SHEET_WEB_APP_URL);
         let data = await res.json();
         
-        // ระบบป้องกันหน้าเว็บพัง: หากพบข้อมูลที่ไม่มี ID จะสร้าง ID ชั่วคราวให้เพื่อให้ค้นหา/แก้ไขได้
+        // ระบบป้องกันหน้าเว็บพัง (Fallback): หากพบข้อมูลที่ไม่มี ID
         data = data.map((item, index) => {
             if (!item.__backendId || item.__backendId.trim() === '') {
                 item.__backendId = 'manual_fallback_' + index + '_' + Date.now();
@@ -51,9 +51,11 @@
       },
       create: async function(data) {
         if (this._isMock) return this._mockCreate(data);
-        data.__backendId = Date.now().toString() + Math.floor(Math.random()*1000);
+        data.__backendId = "id_" + Date.now().toString() + Math.floor(Math.random()*1000);
         try {
-          await fetch(GOOGLE_SHEET_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'create', payload: data }) });
+          const res = await fetch(GOOGLE_SHEET_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'create', payload: data }) });
+          const json = await res.json();
+          if(!json.isOk) return { isOk: false, error: new Error(json.error) };
           await this._fetchData();
           return { isOk: true };
         } catch(e) { return { isOk: false, error: e }; }
@@ -61,7 +63,9 @@
       update: async function(data) {
         if (this._isMock) return this._mockUpdate(data);
         try {
-          await fetch(GOOGLE_SHEET_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'update', payload: data }) });
+          const res = await fetch(GOOGLE_SHEET_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'update', payload: data }) });
+          const json = await res.json();
+          if(!json.isOk) return { isOk: false, error: new Error(json.error) };
           await this._fetchData();
           return { isOk: true };
         } catch(e) { return { isOk: false, error: e }; }
@@ -69,7 +73,9 @@
       delete: async function(data) {
         if (this._isMock) return this._mockDelete(data);
         try {
-          await fetch(GOOGLE_SHEET_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', payload: data }) });
+          const res = await fetch(GOOGLE_SHEET_WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', payload: data }) });
+          const json = await res.json();
+          if(!json.isOk) return { isOk: false, error: new Error(json.error) };
           await this._fetchData();
           return { isOk: true };
         } catch(e) { return { isOk: false, error: e }; }
@@ -169,7 +175,7 @@
         </button>
       </form>
       <div class="mt-6 text-center text-xs font-bold text-slate-400">
-        โรงพยาบาลแม่อาย (v1.4.7)
+        โรงพยาบาลแม่อาย (v1.4.8)
       </div>
     </div>
   </div>
@@ -182,7 +188,7 @@
           <i data-lucide="shield-plus"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.7</span></h1>
+          <h1 class="font-bold text-lg text-black">ระบบข้อมูลวัคซีน <span class="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full ml-1">v1.4.8</span></h1>
           <p class="text-xs font-bold text-black">อนามัยโรงเรียน รพ.แม่อาย</p>
         </div>
       </div>
@@ -1382,7 +1388,7 @@
   }
 
   function renderList() {
-    const q = document.getElementById('search-input').value.toLowerCase();
+    const q = document.getElementById('search-input').value.toLowerCase().trim();
     const fc = document.getElementById('filter-class').value;
     const fs = document.getElementById('filter-school').value;
     const fStatus = document.getElementById('filter-status').value;
@@ -1781,7 +1787,7 @@
   }
 
   function openModal(id) {
-    const s=allStudents.find(x=>x.__backendId===id); if(!s) return;
+    const s=allStudents.find(x=>String(x.__backendId)===String(id)); if(!s) return;
     document.getElementById('delete-confirm').classList.add('hidden');
     document.getElementById('modal-title').textContent = 'ประวัติข้อมูล: ' + (s.full_name||'-');
     const body=document.getElementById('modal-body'), age=s.date_of_birth?calcAge(s.date_of_birth):'-';
@@ -1961,13 +1967,34 @@
     lucide.createIcons({root: body});
 
     document.getElementById('modal-edit-btn').onclick=()=>{closeModal();window.editStudent(id);};
-    document.getElementById('modal-delete-btn').onclick=()=>{document.getElementById('delete-confirm').classList.remove('hidden');};
-    document.getElementById('confirm-delete-no').onclick=()=>{document.getElementById('delete-confirm').classList.add('hidden');};
+    
+    document.getElementById('modal-delete-btn').onclick=()=>{
+      document.getElementById('delete-confirm').classList.remove('hidden');
+    };
+    
+    document.getElementById('confirm-delete-no').onclick=()=>{
+      document.getElementById('delete-confirm').classList.add('hidden');
+    };
+    
     document.getElementById('confirm-delete-yes').onclick=async()=>{
       if(window.dataSdk._handler === null) return;
-      const r=await window.dataSdk.delete(s);
-      if(r.isOk) closeModal();
+      
+      const btn = document.getElementById('confirm-delete-yes');
+      btn.textContent = 'กำลังลบ...';
+      btn.disabled = true;
+      
+      const r = await window.dataSdk.delete(s);
+      
+      btn.textContent = 'ใช่, ลบเลย';
+      btn.disabled = false;
+      
+      if(r.isOk){
+        closeModal();
+      } else {
+        alert('ไม่สามารถลบข้อมูลได้: ' + (r.error.message || 'ข้อผิดพลาดระบบ'));
+      }
     };
+    
     document.getElementById('detail-modal').classList.remove('hidden');
   }
 
@@ -1976,7 +2003,7 @@
   document.getElementById('detail-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 
   function editStudent(id) {
-    const s=allStudents.find(x=>x.__backendId===id); if(!s) return;
+    const s=allStudents.find(x=>String(x.__backendId)===String(id)); if(!s) return;
     editingRecord=s; deleteConfirmationPending=null; switchTab('add');
     
     document.getElementById('form-main-title').textContent = 'แก้ไขข้อมูลนักเรียน';
@@ -2027,7 +2054,10 @@
     e.preventDefault();
     if(window.dataSdk._handler === null || !editingRecord) return;
     if(deleteConfirmationPending===editingRecord.__backendId){
+      this.textContent='กำลังลบ...';
+      this.disabled=true;
       const result=await window.dataSdk.delete(editingRecord);
+      this.disabled=false;
       if(result.isOk){
         editingRecord=null;deleteConfirmationPending=null;
         document.getElementById('student-form').reset();
@@ -2044,6 +2074,10 @@
 
         switchTab('list');
         showStatus('✓ ลบข้อมูลสำเร็จ');
+      } else {
+        showError('ลบข้อมูลไม่สำเร็จ: ' + (result.error.message || 'ข้อผิดพลาดระบบ'));
+        this.textContent='ลบข้อมูล';
+        deleteConfirmationPending=null;
       }
     }else{
       deleteConfirmationPending=editingRecord.__backendId;
