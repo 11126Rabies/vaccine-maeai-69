@@ -1102,6 +1102,21 @@
   window.editStudent = editStudent;
   window.openModal = openModal;
 
+  // ฟังก์ชันดูรูปภาพขนาดใหญ่ (Lightbox)
+  window.viewLargeImage = function(src) {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 p-4 cursor-pointer fade-in';
+    overlay.innerHTML = `
+        <img src="${src}" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl">
+        <button class="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 backdrop-blur-sm transition-colors">
+            <i data-lucide="x" style="width:24px;height:24px;"></i>
+        </button>
+    `;
+    overlay.onclick = () => overlay.remove();
+    document.body.appendChild(overlay);
+    lucide.createIcons({root: overlay});
+  };
+
   function addMonths(date, months) {
     let d = new Date(date);
     d.setMonth(d.getMonth() + months);
@@ -1909,7 +1924,7 @@
        historyGalleryHtml = `
           <h4 class="font-black text-sm text-blue-700 mb-3 mt-4 flex items-center gap-2"><i data-lucide="image" style="width:16px;height:16px;"></i> รูปถ่ายประวัติวัคซีน (คลิกเพื่อดูรูปใหญ่)</h4>
           <div class="flex flex-wrap gap-4">
-             ${imgs.map(img => `<a href="${img}" target="_blank" class="block w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden border-2 border-blue-200 shadow-sm hover:opacity-80 transition-opacity"><img src="${img}" class="w-full h-full object-cover"></a>`).join('')}
+             ${imgs.map(img => `<button type="button" onclick="window.viewLargeImage(this.querySelector('img').src)" class="block w-28 h-28 sm:w-32 sm:h-32 rounded-lg overflow-hidden border-2 border-blue-200 shadow-sm hover:opacity-80 transition-opacity cursor-zoom-in"><img src="${img}" class="w-full h-full object-cover"></button>`).join('')}
           </div>
        `;
     }
